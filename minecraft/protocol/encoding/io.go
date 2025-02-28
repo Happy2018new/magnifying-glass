@@ -1,4 +1,4 @@
-package protocol
+package encoding
 
 import (
 	"image/color"
@@ -8,34 +8,44 @@ import (
 	"github.com/google/uuid"
 )
 
-// IO represents a packet IO direction. Implementations of this interface are Reader and Writer. Reader reads
-// data from the input stream into the pointers passed, whereas Writer writes the values the pointers point to
-// to the output stream.
+// IO represents a packet IO direction that based on BasicIO.
+//
+// Implementations of this interface are
+// Reader and Writer.
+//
+// Reader reads data from the input stream into the pointers
+// passed, whereas Writer writes the values the pointers
+// point point to the output stream.
 type IO interface {
+	Uint8(x *uint8)
+	Int8(x *int8)
 	Uint16(x *uint16)
 	Int16(x *int16)
 	Uint32(x *uint32)
 	Int32(x *int32)
-	BEInt32(x *int32)
 	Uint64(x *uint64)
 	Int64(x *int64)
-	Float32(x *float32)
-	Uint8(x *uint8)
-	Int8(x *int8)
-	Bool(x *bool)
+
 	Varint64(x *int64)
 	Varuint64(x *uint64)
 	Varint32(x *int32)
 	Varuint32(x *uint32)
+	Varint16(x *int16)
+	Varuint16(x *uint16)
+
+	Float32(x *float32)
+	Float64(x *float64)
+
+	Bool(x *bool)
 	String(x *string)
 	StringUTF(x *string)
 	ByteSlice(x *[]byte)
 	Vec3(x *mgl32.Vec3)
 	Vec2(x *mgl32.Vec2)
-	BlockPos(x *BlockPos)
-	UBlockPos(x *BlockPos)
-	ChunkPos(x *ChunkPos)
-	SubChunkPos(x *SubChunkPos)
+	// BlockPos(x *BlockPos)
+	// UBlockPos(x *BlockPos)
+	// ChunkPos(x *ChunkPos)
+	// SubChunkPos(x *SubChunkPos)
 	SoundPos(x *mgl32.Vec3)
 	ByteFloat(x *float32)
 	Bytes(p *[]byte)
@@ -46,19 +56,19 @@ type IO interface {
 	RGBA(x *color.RGBA)
 	VarRGBA(x *color.RGBA)
 	EntityMetadata(x *map[uint32]any)
-	Item(x *ItemStack)
-	ItemInstance(i *ItemInstance)
-	ItemDescriptorCount(i *ItemDescriptorCount)
-	StackRequestAction(x *StackRequestAction)
-	MaterialReducer(x *MaterialReducer)
-	Recipe(x *Recipe)
-	EventType(x *Event)
-	TransactionDataType(x *InventoryTransactionData)
-	PlayerInventoryAction(x *UseItemTransactionData)
-	GameRule(x *GameRule)
+	// Item(x *ItemStack)
+	// ItemInstance(i *ItemInstance)
+	// ItemDescriptorCount(i *ItemDescriptorCount)
+	// StackRequestAction(x *StackRequestAction)
+	// MaterialReducer(x *MaterialReducer)
+	// Recipe(x *Recipe)
+	// EventType(x *Event)
+	// TransactionDataType(x *InventoryTransactionData)
+	// PlayerInventoryAction(x *UseItemTransactionData)
+	// GameRule(x *GameRule)
 	AbilityValue(x *any)
 	CompressedBiomeDefinitions(x *map[string]any)
-	Bitset(x *Bitset, size int)
+	// Bitset(x *Bitset, size int)
 
 	ShieldID() int32
 	UnknownEnumOption(value any, enum string)
