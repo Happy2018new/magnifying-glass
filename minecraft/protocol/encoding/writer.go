@@ -43,17 +43,10 @@ func (w *Writer) Bool(x *bool) {
 	_ = w.Writer().WriteByte(*(*byte)(unsafe.Pointer(x)))
 }
 
-// StringUTF ...
-func (w *Writer) StringUTF(x *string) {
-	l := int16(len(*x))
-	w.Int16(&l)
-	_, _ = w.Writer().Write([]byte(*x))
-}
-
-// String writes a string, prefixed with a varuint32, to the underlying buffer.
+// String writes a string, prefixed with a varint16, to the underlying buffer.
 func (w *Writer) String(x *string) {
-	l := uint32(len(*x))
-	w.Varuint32(&l)
+	l := int16(len(*x))
+	w.Varint16(&l)
 	_, _ = w.Writer().Write([]byte(*x))
 }
 
@@ -495,6 +488,13 @@ func (w *Writer) NBT(x *map[string]any, encoding nbt.Encoding) {
 
 // NBTList writes a slice as NBT to the underlying buffer using the encoding passed.
 func (w *Writer) NBTList(x *[]any, encoding nbt.Encoding) {
+	if err := nbt.NewEncoderWithEncoding(w.Writer(), encoding).Encode(*x); err != nil {
+		panic(err)
+	}
+}
+
+// NBTString writes a string as NBT to the underlying buffer using the encoding passed.
+func (w *Writer) NBTString(x *string, encoding nbt.Encoding) {
 	if err := nbt.NewEncoderWithEncoding(w.Writer(), encoding).Encode(*x); err != nil {
 		panic(err)
 	}

@@ -1,11 +1,7 @@
 package encoding
 
 import (
-	"image/color"
 	"magnifying-glass/minecraft/nbt"
-
-	"github.com/go-gl/mathgl/mgl32"
-	"github.com/google/uuid"
 )
 
 // IO represents a packet IO direction that based on BasicIO.
@@ -38,24 +34,28 @@ type IO interface {
 
 	Bool(x *bool)
 	String(x *string)
-	StringUTF(x *string)
-	ByteSlice(x *[]byte)
-	Vec3(x *mgl32.Vec3)
-	Vec2(x *mgl32.Vec2)
+
+	ConsumeEffect(x *ConsumeEffect) // new
+
+	// StringUTF(x *string)
+	// ByteSlice(x *[]byte)
+	// Vec3(x *mgl32.Vec3)
+	// Vec2(x *mgl32.Vec2)
 	// BlockPos(x *BlockPos)
 	// UBlockPos(x *BlockPos)
 	// ChunkPos(x *ChunkPos)
 	// SubChunkPos(x *SubChunkPos)
-	SoundPos(x *mgl32.Vec3)
-	ByteFloat(x *float32)
-	Bytes(p *[]byte)
+	// SoundPos(x *mgl32.Vec3)
+	// ByteFloat(x *float32)
+	// Bytes(p *[]byte)
 	NBT(m *map[string]any, encoding nbt.Encoding)
 	NBTList(m *[]any, encoding nbt.Encoding)
-	UUID(x *uuid.UUID)
-	RGB(x *color.RGBA)
-	RGBA(x *color.RGBA)
-	VarRGBA(x *color.RGBA)
-	EntityMetadata(x *map[uint32]any)
+	NBTString(x *string, encoding nbt.Encoding)
+	// UUID(x *uuid.UUID)
+	// RGB(x *color.RGBA)
+	// RGBA(x *color.RGBA)
+	// VarRGBA(x *color.RGBA)
+	// EntityMetadata(x *map[uint32]any)
 	// Item(x *ItemStack)
 	// ItemInstance(i *ItemInstance)
 	// ItemDescriptorCount(i *ItemDescriptorCount)
@@ -66,11 +66,11 @@ type IO interface {
 	// TransactionDataType(x *InventoryTransactionData)
 	// PlayerInventoryAction(x *UseItemTransactionData)
 	// GameRule(x *GameRule)
-	AbilityValue(x *any)
-	CompressedBiomeDefinitions(x *map[string]any)
+	// AbilityValue(x *any)
+	// CompressedBiomeDefinitions(x *map[string]any)
 	// Bitset(x *Bitset, size int)
 
-	ShieldID() int32
+	// ShieldID() int32
 	UnknownEnumOption(value any, enum string)
 	InvalidValue(value any, forField, reason string)
 }
@@ -127,6 +127,13 @@ func FuncSliceUint32Length[T any, S ~*[]T](r IO, x S, f func(*T)) {
 	count := uint32(len(*x))
 	r.Uint32(&count)
 	FuncSliceOfLen(r, count, x, f)
+}
+
+// FuncSliceVarint32Length reads/writes a slice of T with a varint32 prefix.
+func FuncSliceVarint32Length[T any, S ~*[]T](r IO, x S, f func(*T)) {
+	count := int32(len(*x))
+	r.Varint32(&count)
+	FuncSliceOfLen(r, uint32(count), x, f)
 }
 
 // FuncSlice reads/writes a slice of T using function f with a varuint32 length prefix.
@@ -240,5 +247,22 @@ func OptionalMarshaler[T any, A PtrMarshaler[T]](r IO, x *Optional[T]) {
 	r.Bool(&x.set)
 	if x.set {
 		A(&x.val).Marshal(r)
+	}
+}
+
+// IDOrX is `ID or X` data type in the protocol.
+type IDOrX[T any] struct {
+	// 0 if value of type X is given inline;
+	// otherwise registry ID + 1.
+	ID int32
+	// Only present if ID is 0.
+	Value T
+}
+
+// IDOrXMarshaler reads/writes an Optional assuming *T implements Marshaler.
+func IDOrXMarshaler[T any, A PtrMarshaler[T]](r IO, x *IDOrX[T]) {
+	r.Varint32(&x.ID)
+	if x.ID == 0 {
+		A(&x.Value).Marshal(r)
 	}
 }

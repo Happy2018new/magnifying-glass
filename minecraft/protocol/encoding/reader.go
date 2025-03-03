@@ -54,29 +54,11 @@ func (r *Reader) Bool(x *bool) {
 	*x = *(*bool)(unsafe.Pointer(&u))
 }
 
-// StringUTF ...
-func (r *Reader) StringUTF(x *string) {
-	var length int16
-	r.Int16(&length)
-	l := int(length)
-	if l > math.MaxInt16 {
-		r.panic(errStringTooLong)
-	}
-	data := make([]byte, l)
-	if _, err := r.Reader().Read(data); err != nil {
-		r.panic(err)
-	}
-	*x = *(*string)(unsafe.Pointer(&data))
-}
-
 // String reads a string from the underlying buffer.
 func (r *Reader) String(x *string) {
-	var length uint32
-	r.Varuint32(&length)
+	var length int16
+	r.Varint16(&length)
 	l := int(length)
-	if l > math.MaxInt32 {
-		r.panic(errStringTooLong)
-	}
 	data := make([]byte, l)
 	if _, err := r.Reader().Read(data); err != nil {
 		r.panic(err)
@@ -215,6 +197,17 @@ func (r *Reader) NBT(m *map[string]any, encoding nbt.Encoding) {
 // NBTList reads a list of NBT tags from the underlying buffer.
 func (r *Reader) NBTList(m *[]any, encoding nbt.Encoding) {
 	if err := nbt.NewDecoderWithEncoding(r.Reader(), encoding).Decode(m); err != nil {
+		r.panic(err)
+	}
+}
+
+// NBTString reads a string tag into a string from the underlying buffer.
+func (r *Reader) NBTString(str *string, encoding nbt.Encoding) {
+	dec := nbt.NewDecoderWithEncoding(r.Reader(), encoding)
+	dec.AllowZero = true
+
+	*str = ""
+	if err := dec.Decode(str); err != nil {
 		r.panic(err)
 	}
 }
