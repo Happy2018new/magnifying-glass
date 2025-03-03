@@ -1,4 +1,30 @@
-MIT License
+MIXED LICENSE
+======================================================================================
+This project is licensed under both "PART A" and "PART B".
+
+For "PART A", due to this project used some codes from
+[gophertunnel](https://github.com/Sandertv/gophertunnel).
+
+For "PART B", due to this project based on the documents that from
+Minecraft Wiki (https://minecraft.wiki/w/Java_Edition_protocol).
+
+"Part A" and "Part B" will construct to this LICENSE, 
+and as simultaneous as possible.
+
+"PART A" and "PART B" are not compatible completely.
+So, if some contents from "PART A" have conflict with "PART B",
+please use what is mentioned in "Part B".
+
+Therefore, the license takes priority "PART B" > "PART A".
+======================================================================================
+
+
+
+
+
+PART A
+======================================================================================
+MIT LICENSE
 
 Copyright (c) 2019 Sandertv
 Copyright (c) 2025 Eternal Crystal
@@ -20,3 +46,16 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+======================================================================================
+
+
+
+
+
+PART B
+======================================================================================
+CC BY-SA 3.0 Unported (Attribution-ShareAlike 3.0 Unported)
+
+See https://creativecommons.org/licenses/by-sa/3.0/ for details.
+See https://creativecommons.org/licenses/by-sa/3.0/legalcode.en to get legal code.
+======================================================================================
