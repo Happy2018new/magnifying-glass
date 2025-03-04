@@ -16,9 +16,7 @@ type PotionEffectDetail struct {
 	// when a stronger one is applied.
 	// This guarantees that the weaker one will persist,
 	// in case it lasts longer.
-	HasHiddenEffect bool
-	// Only present if Has Hidden Effect is true.
-	HiddenEffect *PotionEffectDetail
+	HiddenEffect Optional[*PotionEffectDetail]
 }
 
 func (p *PotionEffectDetail) Marshal(io IO) {
@@ -26,13 +24,7 @@ func (p *PotionEffectDetail) Marshal(io IO) {
 	io.Varint32(&p.Duration)
 	io.Bool(&p.ShowParticles)
 	io.Bool(&p.ShowIcon)
-	io.Bool(&p.HasHiddenEffect)
-	if p.HasHiddenEffect {
-		if p.HiddenEffect == nil {
-			p.HiddenEffect = new(PotionEffectDetail)
-		}
-		Single(io, p.HiddenEffect)
-	}
+	OptionalPointerMarshaler(io, &p.HiddenEffect)
 }
 
 // Describes all the aspects of a potion effect.

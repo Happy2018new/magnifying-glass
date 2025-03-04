@@ -4,18 +4,14 @@ package encoding
 type SoundEvent struct {
 	// SoundName ..
 	SoundName Identifier
-	// Whether this sound has a fixed range,
-	// as opposed to a variable volume based on distance.
-	HasFixedRange bool
-	// The maximum range of the sound.
-	// Only present if Has Fixed Range is true.
-	FixedRange float32
+	// If this sound has a fixed range,
+	// then it refer to the maximum range of the sound.
+	// If this field set to not exist,
+	// this is a variable volume based on distance.
+	FixedRange Optional[float32]
 }
 
 func (s *SoundEvent) Marshal(io IO) {
 	Single(io, &s.SoundName)
-	io.Bool(&s.HasFixedRange)
-	if s.HasFixedRange {
-		io.Float32(&s.FixedRange)
-	}
+	OptionalFunc(io, &s.FixedRange, io.Float32)
 }

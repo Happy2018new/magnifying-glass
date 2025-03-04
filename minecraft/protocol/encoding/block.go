@@ -38,42 +38,18 @@ func (b *BlockProperty) Marshal(io IO) {
 // the values of specific block state properties, NBT data
 // related to block entities, or any combination of the three.
 type BlockPredicate struct {
-	// Whether this predicate is tied
-	// to specific types of blocks.
-	HasBlocks bool
 	// IDs in the minecraft:block registry.
 	// Only present if Has Blocks is true.
-	Blocks IDSet
-	// hether this predicate is tied to
-	// specific properties of a block.
-	HasProperties bool
-	// Number of elements in the following array.
-	// Only present if Has Properties is true.
-	NumberOfProperties int32
+	Blocks Optional[IDSet]
 	// See Property structure below.
 	// Only present if Has Properties is true.
-	Properties []BlockProperty
-	// Whether this predicate is tied
-	// to specific block entity data.
-	HasNBT bool
+	Properties Optional[[]BlockProperty]
 	// Only present is Has NBT is true.
-	NBT map[string]any
+	NBT Optional[map[string]any]
 }
 
 func (b *BlockPredicate) Marshal(io IO) {
-	io.Bool(&b.HasBlocks)
-	if b.HasBlocks {
-		Single(io, &b.Blocks)
-	}
-
-	io.Bool(&b.HasProperties)
-	if b.HasProperties {
-		io.Varint32(&b.NumberOfProperties)
-		SliceOfLen(io, uint32(b.NumberOfProperties), &b.Properties)
-	}
-
-	io.Bool(&b.HasNBT)
-	if b.HasNBT {
-		io.NBT(&b.NBT, nbt.NetworkBigEndian)
-	}
+	OptionalMarshaler(io, &b.Blocks)
+	OptionalSliceMarshaler(io, &b.Properties)
+	OptionalFunc(io, &b.NBT, func(t *map[string]any) { io.NBT(t, nbt.NetworkBigEndian) })
 }

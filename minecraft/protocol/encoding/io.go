@@ -242,11 +242,36 @@ func OptionalFuncIO[T any](r IO, x *Optional[T], f func(IO, *T)) any {
 	return x
 }
 
+// OptionalSliceFunc reads/writes an Optional[S].
+// Note that:
+//   - S must be a slice that satisfy []T.
+//   - T must have implements Marshaler.
+func OptionalSliceMarshaler[T any, S ~[]T, A PtrMarshaler[T]](r IO, x *Optional[S]) any {
+	r.Bool(&x.set)
+	if x.set {
+		s := []T(x.val)
+		SliceVarint32Length[T, *[]T, A](r, &s)
+		x.val = s
+	}
+	return x
+}
+
 // OptionalMarshaler reads/writes an Optional assuming *T implements Marshaler.
 func OptionalMarshaler[T any, A PtrMarshaler[T]](r IO, x *Optional[T]) {
 	r.Bool(&x.set)
 	if x.set {
 		A(&x.val).Marshal(r)
+	}
+}
+
+// OptionalPointerMarshaler reads/writes an Optional assuming *T implements Marshaler.
+func OptionalPointerMarshaler[T any, A PtrMarshaler[T]](r IO, x *Optional[*T]) {
+	r.Bool(&x.set)
+	if x.set {
+		if x.val == nil {
+			x.val = new(T)
+		}
+		A(x.val).Marshal(r)
 	}
 }
 

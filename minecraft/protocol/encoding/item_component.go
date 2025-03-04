@@ -445,3 +445,40 @@ func (i *ItemComponentConsumable) Marshal(io IO) {
 	io.Bool(&i.HasConsumeParticles)
 	FuncSliceVarint32Length(io, &i.Effects, io.ConsumeEffect)
 }
+
+// This specifies the item produced after using
+// the current item.
+// In the Notchian server, this is used for stews,
+// which turn into bowls.
+// TODO
+type ItemComponentUseRemainder struct {
+	// How long it takes to consume the item.
+	Remainder any
+}
+
+func (i *ItemComponentUseRemainder) Name() string {
+	return "minecraft:use_remainder"
+}
+
+func (i *ItemComponentUseRemainder) Marshal(io IO) {
+	// TODO
+}
+
+// Cooldown to apply on use of the item.
+type ItemComponentUseCooldown struct {
+	// How long it takes to consume the item.
+	Seconds float32
+	// Group of items to apply the cooldown to.
+	// Only present if Has cooldown group is true;
+	// otherwise defaults to the item's identifier.
+	CooldownGroup Optional[Identifier]
+}
+
+func (i *ItemComponentUseCooldown) Name() string {
+	return "minecraft:use_cooldown"
+}
+
+func (i *ItemComponentUseCooldown) Marshal(io IO) {
+	io.Float32(&i.Seconds)
+	OptionalMarshaler(io, &i.CooldownGroup)
+}
