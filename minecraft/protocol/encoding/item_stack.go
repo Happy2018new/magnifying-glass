@@ -1,5 +1,22 @@
 package encoding
 
+// ItemToolRule ..
+type ItemComponentToolRule struct {
+	// The blocks this rule applies to
+	// (IDs in the minecraft:block registry).
+	Blocks IDSet
+	// The speed at which the tool breaks this rules' blocks.
+	Speed Optional[float32]
+	// Whether items should drop only if this is the correct tool.
+	CorrectDropForBlocks Optional[bool]
+}
+
+func (i *ItemComponentToolRule) Marshal(io IO) {
+	Single(io, &i.Blocks)
+	OptionalFunc(io, &i.Speed, io.Float32)
+	OptionalFunc(io, &i.CorrectDropForBlocks, io.Bool)
+}
+
 type ItemStack struct {
 	// The item count. Every following field is only
 	// present if this value is greater than zero.

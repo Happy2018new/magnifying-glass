@@ -469,7 +469,6 @@ type ItemComponentUseCooldown struct {
 	// How long it takes to consume the item.
 	Seconds float32
 	// Group of items to apply the cooldown to.
-	// Only present if Has cooldown group is true;
 	// otherwise defaults to the item's identifier.
 	CooldownGroup Optional[Identifier]
 }
@@ -481,4 +480,274 @@ func (i *ItemComponentUseCooldown) Name() string {
 func (i *ItemComponentUseCooldown) Marshal(io IO) {
 	io.Float32(&i.Seconds)
 	OptionalMarshaler(io, &i.CooldownGroup)
+}
+
+// Marks this item as damage resistant.
+// The client won't render the item as
+// being on-fire if this component is
+// present.
+type ItemComponentDamageResistant struct {
+	// Tag specifying damage types the
+	// item is immune to.
+	// Not prefixed by '#'!.
+	Types Identifier
+}
+
+func (i *ItemComponentDamageResistant) Name() string {
+	return "minecraft:damage_resistant"
+}
+
+func (i *ItemComponentDamageResistant) Marshal(io IO) {
+	Single(io, &i.Types)
+}
+
+// Alters the speed at which this
+// item breaks certain blocks.
+type ItemComponentTool struct {
+	// Rule ..
+	Rule []ItemComponentToolRule
+	// The mining speed in case none of
+	// the previous rule were matched.
+	DefaultMiningSpeed float32
+	// The amount of damage the item takes
+	// per block break.
+	DamagePerBlock int32
+}
+
+func (i *ItemComponentTool) Name() string {
+	return "minecraft:tool"
+}
+
+func (i *ItemComponentTool) Marshal(io IO) {
+	SliceVarint32Length(io, &i.Rule)
+	io.Float32(&i.DefaultMiningSpeed)
+	io.Varint32(&i.DamagePerBlock)
+}
+
+// Allows the item to be enchanted
+// by an enchanting table.
+type ItemComponentEnchantable struct {
+	// Opaque internal value controlling how
+	// expensive enchantments may be offered.
+	Value int32
+}
+
+func (i *ItemComponentEnchantable) Name() string {
+	return "minecraft:enchantable"
+}
+
+func (i *ItemComponentEnchantable) Marshal(io IO) {
+	io.Varint32(&i.Value)
+}
+
+const (
+	ItemSlotMainhand int32 = iota
+	ItemSlotFeet
+	ItemSlotLegs
+	ItemSlotChest
+	ItemSlotHead
+	ItemSlotOffhand
+	ItemSlotBody
+)
+
+// Allows the item to be equipped by the player.
+type ItemComponentEquippable struct {
+	// 0: mainhand
+	// 1: feet
+	// 2: legs
+	// 3: chest
+	// 4: head
+	// 5: offhand
+	// 6: body
+	Slot int32
+	// ID in the minecraft:sound_event registry,
+	// or an inline definition.
+	EquipSound IDOrX[SoundEvent]
+	// Model ..
+	Model Optional[Identifier]
+	// CameraOverlay ..
+	CameraOverlay Optional[Identifier]
+	// IDs in the minecraft:entity_type registry.
+	AllowedEntities Optional[IDSet]
+	// Dispensable ..
+	Dispensable bool
+	// Swappable ..
+	Swappable bool
+	// DamageOnHurt ..
+	DamageOnHurt bool
+}
+
+func (i *ItemComponentEquippable) Name() string {
+	return "minecraft:equippable"
+}
+
+func (i *ItemComponentEquippable) Marshal(io IO) {
+	io.Varint32(&i.Slot)
+	IDOrXMarshaler(io, &i.EquipSound)
+	OptionalMarshaler(io, &i.Model)
+	OptionalMarshaler(io, &i.CameraOverlay)
+	OptionalMarshaler(io, &i.AllowedEntities)
+	io.Bool(&i.Dispensable)
+	io.Bool(&i.Swappable)
+	io.Bool(&i.DamageOnHurt)
+}
+
+// Items that can be combined with this
+// item in an anvil to repair it.
+type ItemComponentRepairable struct {
+	// IDs in the minecraft:item registry.
+	Items IDSet
+}
+
+func (i *ItemComponentRepairable) Name() string {
+	return "minecraft:repairable"
+}
+
+func (i *ItemComponentRepairable) Marshal(io IO) {
+	Single(io, &i.Items)
+}
+
+// Makes the item function like elytra.
+type ItemComponentGlider struct{}
+
+func (i *ItemComponentGlider) Name() string {
+	return "minecraft:glider"
+}
+
+func (i *ItemComponentGlider) Marshal(io IO) {}
+
+// Makes the item function like a totem of undying.
+type ItemComponentDeathProtection struct {
+	// Effects to apply on consumption.
+	// See Consume Effect (https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Slot_Data#Consume_Effect).
+	Effects []ConsumeEffect
+}
+
+func (i *ItemComponentDeathProtection) Name() string {
+	return "minecraft:death_protection"
+}
+
+func (i *ItemComponentDeathProtection) Marshal(io IO) {
+	FuncSliceVarint32Length(io, &i.Effects, io.ConsumeEffect)
+}
+
+// The enchantments stored in this enchanted book.
+type ItemComponentStoredEnchantments struct {
+	// Enchantment ..
+	Enchantment []Enchantment
+	// Whether the list of enchantments should
+	// be shown on the item's tooltip.
+	ShowInTooltip bool
+}
+
+func (i *ItemComponentStoredEnchantments) Name() string {
+	return "minecraft:stored_enchantments"
+}
+
+func (i *ItemComponentStoredEnchantments) Marshal(io IO) {
+	SliceVarint32Length(io, &i.Enchantment)
+	io.Bool(&i.ShowInTooltip)
+}
+
+// Color of dyed leather armor.
+type ItemComponentDyedColor struct {
+	// The RGB components of the color,
+	// encoded as an integer.
+	Color int32
+	// Whether the armor's color should be
+	// shown on the item's tooltip.
+	ShowInTooltip bool
+}
+
+func (i *ItemComponentDyedColor) Name() string {
+	return "minecraft:dyed_color"
+}
+
+func (i *ItemComponentDyedColor) Marshal(io IO) {
+	io.Int32(&i.Color)
+	io.Bool(&i.ShowInTooltip)
+}
+
+// Color of the markings on the map item model.
+type ItemComponentMapColor struct {
+	// The RGB components of the color,
+	// encoded as an integer.
+	Color int32
+}
+
+func (i *ItemComponentMapColor) Name() string {
+	return "minecraft:map_color"
+}
+
+func (i *ItemComponentMapColor) Marshal(io IO) {
+	io.Int32(&i.Color)
+}
+
+// The ID of the map.
+type ItemComponentMapID struct {
+	// ID ..
+	ID int32
+}
+
+func (i *ItemComponentMapID) Name() string {
+	return "minecraft:map_id"
+}
+
+func (i *ItemComponentMapID) Marshal(io IO) {
+	io.Varint32(&i.ID)
+}
+
+// Icons present on a map.
+type ItemComponentMapDecorations struct {
+	// Always a Compound Tag.
+	Data map[string]any
+}
+
+func (i *ItemComponentMapDecorations) Name() string {
+	return "minecraft:map_decorations"
+}
+
+func (i *ItemComponentMapDecorations) Marshal(io IO) {
+	io.NBT(&i.Data, nbt.NetworkBigEndian)
+}
+
+const (
+	MapPostProcessingLock int32 = iota
+	MapPostProcessingScale
+)
+
+// Used internally by the client
+// when expanding or locking a map.
+//
+// Display extra information on the
+// item's tooltip when the component
+// is present.
+type ItemComponentMapPostProcessing struct {
+	// Type of post processing. Can be either:
+	// 		0 - Lock
+	// 		1 - Scale
+	Type int32
+}
+
+func (i *ItemComponentMapPostProcessing) Name() string {
+	return "minecraft:map_post_processing"
+}
+
+func (i *ItemComponentMapPostProcessing) Marshal(io IO) {
+	io.Varint32(&i.Type)
+}
+
+// Projectiles loaded into a charged crossbow.
+type ItemComponentChargedProjectiles struct {
+	// Projectiles ..
+	// TODO
+	Projectiles []any
+}
+
+func (i *ItemComponentChargedProjectiles) Name() string {
+	return "minecraft:charged_projectiles"
+}
+
+func (i *ItemComponentChargedProjectiles) Marshal(io IO) {
+	// TODO
 }

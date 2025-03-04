@@ -8,8 +8,8 @@ const (
 
 const (
 	AttributeModifierSlotAny int32 = iota
-	AttributeModifierSlotMainHand
-	AttributeModifierSlotOffHand
+	AttributeModifierSlotMainhand
+	AttributeModifierSlotOffhand
 	AttributeModifierSlotHand
 	AttributeModifierSlotFeet
 	AttributeModifierSlotLegs
