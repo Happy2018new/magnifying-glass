@@ -1,22 +1,79 @@
 package encoding
 
-// ItemToolRule ..
-type ItemComponentToolRule struct {
-	// The blocks this rule applies to
-	// (IDs in the minecraft:block registry).
-	Blocks IDSet
-	// The speed at which the tool breaks this rules' blocks.
-	Speed Optional[float32]
-	// Whether items should drop only if this is the correct tool.
-	CorrectDropForBlocks Optional[bool]
-}
+const (
+	ItemComponentTypeCustomData int32 = iota
+	ItemComponentTypeMaxStackSize
+	ItemComponentTypeMaxDamage
+	ItemComponentTypeDamage
+	ItemComponentTypeUnbreakable
+	ItemComponentTypeCustomName
+	ItemComponentTypeItemName
+	ItemComponentTypeItemModel
+	ItemComponentTypeLore
+	ItemComponentTypeRarity
+	ItemComponentTypeEnchantments
+	ItemComponentTypeCanPlaceOn
+	ItemComponentTypeCanBreak
+	ItemComponentTypeAttributeModifiers
+	ItemComponentTypeCustomModelData
+	ItemComponentTypeHideAdditionalTooltip
+	ItemComponentTypeHideTooltip
+	ItemComponentTypeRepairCost
+	ItemComponentTypeCreativeSlotLock
+	ItemComponentTypeEnchantmentGlintOverride
+	ItemComponentTypeIntangibleProjectile
+	ItemComponentTypeFood
+	ItemComponentTypeConsumable
+	ItemComponentTypeUseRemainder
+	ItemComponentTypeUseCooldown
+	ItemComponentTypeDamageResistant
+	ItemComponentTypeTool
+	ItemComponentTypeEnchantable
+	ItemComponentTypeEquippable
+	ItemComponentTypeRepairable
+	ItemComponentTypeGlider
+	ItemComponentTypeTooltipStyle
+	ItemComponentTypeDeathProtection
+	ItemComponentTypeStoredEnchantments
+	ItemComponentTypeDyedColor
+	ItemComponentTypeMapColor
+	ItemComponentTypeMapID
+	ItemComponentTypeMapDecorations
+	ItemComponentTypeMapPostProcessing
+	ItemComponentTypeChargedProjectiles
+	ItemComponentTypeBundleContents
+	ItemComponentTypePotionContents
+	ItemComponentTypeSuspiciousStewEffects
+	ItemComponentTypeWritableBookContent
+	ItemComponentTypeWrittenBookContent
+	ItemComponentTypeTrim
+	ItemComponentTypeDebugStickState
+	ItemComponentTypeEntityData
+	ItemComponentTypeBucketEntityData
+	ItemComponentTypeBlockEntityData
+	ItemComponentTypeInstrument
+	ItemComponentTypeOminousBottleAmplifier
+	ItemComponentTypeJukeboxPlayable
+	ItemComponentTypeRecipes
+	ItemComponentTypeLodestoneTracker
+	ItemComponentTypeFireworkExplosion
+	ItemComponentTypeFireworks
+	ItemComponentTypeProfile
+	ItemComponentTypeNoteBlockSound
+	ItemComponentTypeBannerPatterns
+	ItemComponentTypeBaseColor
+	ItemComponentTypePotDecorations
+	ItemComponentTypeContainer
+	ItemComponentTypeBlockState
+	ItemComponentTypeBees
+	ItemComponentTypeLock
+	ItemComponentTypeContainerLoot
+)
 
-func (i *ItemComponentToolRule) Marshal(io IO) {
-	Single(io, &i.Blocks)
-	OptionalFunc(io, &i.Speed, io.Float32)
-	OptionalFunc(io, &i.CorrectDropForBlocks, io.Bool)
-}
-
+// The Slot (ItemStack) data structure defines
+// how an item is represented when inside an
+// inventory window of any kind, such as a chest
+// or furnace.
 type ItemStack struct {
 	// The item count. Every following field is only
 	// present if this value is greater than zero.
@@ -32,9 +89,11 @@ type ItemStack struct {
 	// that are present on some items.
 	RemoveComponentsCount int32
 	// Components that needs to add.
-	ComponentsToAdd any
+	ComponentsToAdd []ItemComponent
 	// Components that need to remove.
 	// int32 refer to the type of
-	// components.
+	// each component.
+	// See the constant enum above for
+	// more details.
 	ComponentsToRemove []int32
 }

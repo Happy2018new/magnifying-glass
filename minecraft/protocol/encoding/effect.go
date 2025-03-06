@@ -1,5 +1,21 @@
 package encoding
 
+// Effect is the Minecraft effect
+// that could apply to the Minecraft
+// Java Entity.
+type Effect struct {
+	// The ID of the effect in the
+	// potion effect type registry.
+	TypeID int32
+	// The duration of the effect.
+	Duration int32
+}
+
+func (e *Effect) Marshal(io IO) {
+	io.Varint32(&e.TypeID)
+	io.Varint32(&e.Duration)
+}
+
 // PotionEffectDetail ..
 type PotionEffectDetail struct {
 	// Amplifier ..

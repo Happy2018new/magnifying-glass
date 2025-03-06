@@ -2,6 +2,8 @@ package encoding
 
 import (
 	"magnifying-glass/minecraft/nbt"
+
+	"github.com/google/uuid"
 )
 
 // IO represents a packet IO direction that based on BasicIO.
@@ -36,6 +38,9 @@ type IO interface {
 	String(x *string)
 
 	ConsumeEffect(x *ConsumeEffect) // new
+	Position(x *BlockPos)           // new
+	ItemComponent(x *ItemComponent) // new
+	ItemStack(x *ItemStack)         // new
 
 	// StringUTF(x *string)
 	// ByteSlice(x *[]byte)
@@ -51,7 +56,7 @@ type IO interface {
 	NBT(m *map[string]any, encoding nbt.Encoding)
 	NBTList(m *[]any, encoding nbt.Encoding)
 	NBTString(x *string, encoding nbt.Encoding)
-	// UUID(x *uuid.UUID)
+	UUID(x *uuid.UUID)
 	// RGB(x *color.RGBA)
 	// RGBA(x *color.RGBA)
 	// VarRGBA(x *color.RGBA)

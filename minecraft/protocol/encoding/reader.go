@@ -218,15 +218,7 @@ func (r *Reader) UUID(x *uuid.UUID) {
 	if _, err := r.Reader().Read(b); err != nil {
 		r.panic(err)
 	}
-
-	// The UUIDs we read are Little Endian, but the uuid library is based on Big Endian UUIDs, so we need to
-	// reverse the two int64s the UUID is composed of, then reverse their bytes too.
-	b = append(b[8:], b[:8]...)
-	var arr [16]byte
-	for i, j := 0, 15; i < j; i, j = i+1, j-1 {
-		arr[i], arr[j] = b[j], b[i]
-	}
-	*x = arr
+	*x = uuid.UUID(b)
 }
 
 // // PlayerInventoryAction reads a PlayerInventoryAction.

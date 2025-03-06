@@ -2,9 +2,48 @@ package encoding
 
 import "magnifying-glass/minecraft/nbt"
 
-// BlockProperty refer to the property
+// BlockPos is the position of a block. It is composed of three integers, and is typically written as either
+// 3 varint32s or a varint32, varuint32 and varint32.
+type BlockPos [3]int32
+
+// X returns the X coordinate of the block position. It is equivalent to BlockPos[0].
+func (pos BlockPos) X() int32 {
+	return pos[0]
+}
+
+// Y returns the Y coordinate of the block position. It is equivalent to BlockPos[1].
+func (pos BlockPos) Y() int32 {
+	return pos[1]
+}
+
+// Z returns the Z coordinate of the block position. It is equivalent to BlockPos[2].
+func (pos BlockPos) Z() int32 {
+	return pos[2]
+}
+
+// BlockStates refer to the property
 // of a Minecraft Java block.
-type BlockProperty struct {
+//
+// TODO: I don't what's the difference
+// between this and BlockPredicateProperty.
+type BlockStates struct {
+	// Name ..
+	Name string
+	// Value ..
+	Value string
+}
+
+func (b *BlockStates) Marshal(io IO) {
+	io.String(&b.Name)
+	io.String(&b.Value)
+}
+
+// BlockPredicateProperty refer to the
+// property of a Minecraft Java block.
+//
+// TODO: I don't what's the difference
+// between this and BlockStates.
+type BlockPredicateProperty struct {
 	// Name of the block state property.
 	Name string
 	// Whether this is an exact value match,
@@ -21,7 +60,7 @@ type BlockProperty struct {
 	MaxValue string
 }
 
-func (b *BlockProperty) Marshal(io IO) {
+func (b *BlockPredicateProperty) Marshal(io IO) {
 	io.String(&b.Name)
 	io.Bool(&b.IsExactMatch)
 	if b.IsExactMatch {
@@ -43,7 +82,7 @@ type BlockPredicate struct {
 	Blocks Optional[IDSet]
 	// See Property structure below.
 	// Only present if Has Properties is true.
-	Properties Optional[[]BlockProperty]
+	Properties Optional[[]BlockPredicateProperty]
 	// Only present is Has NBT is true.
 	NBT Optional[map[string]any]
 }

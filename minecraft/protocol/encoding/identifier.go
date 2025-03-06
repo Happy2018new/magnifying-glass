@@ -14,8 +14,8 @@ package encoding
 //
 // For ease of determining whether a namespace or value is valid,
 // here are regular expressions for each:
-// 		Namespace: [a-z0-9.-_]
-// 		Value: [a-z0-9.-_/]
+// 		- Namespace: [a-z0-9.-_]
+// 		- Value: [a-z0-9.-_/]
 type Identifier string
 
 func (i *Identifier) Marshal(io IO) {
@@ -23,6 +23,8 @@ func (i *Identifier) Marshal(io IO) {
 	io.String(&str)
 	*i = Identifier(str)
 }
+
+const IDSetTypeTagDefined int32 = 0
 
 // Represents a set of IDs in a certain
 // registry (implied by context),
@@ -44,7 +46,7 @@ type IDSet struct {
 
 func (i *IDSet) Marshal(io IO) {
 	io.Varint32(&i.Type)
-	if i.Type == 0 {
+	if i.Type == IDSetTypeTagDefined {
 		Single(io, &i.TagName)
 	} else {
 		FuncSliceOfLen(io, uint32(i.Type)-1, &i.IDs, io.Varint32)

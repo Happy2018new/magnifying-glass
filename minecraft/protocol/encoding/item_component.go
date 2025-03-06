@@ -1,9 +1,9 @@
 package encoding
 
-import "magnifying-glass/minecraft/nbt"
+import (
+	"magnifying-glass/minecraft/nbt"
 
-const (
-	ItemComponentCustomDataType uint8 = iota
+	"github.com/google/uuid"
 )
 
 // ItemComponent is the structured components
@@ -17,10 +17,142 @@ type ItemComponent interface {
 
 // lookupItemComponentType looks up
 // the ID of a ItemComponent.
-func lookupItemComponentType(x ItemComponent, id *uint8) bool {
+func lookupItemComponentType(x ItemComponent, id *int32) bool {
 	switch x.(type) {
 	case *ItemComponentCustomData:
-		*id = ItemComponentCustomDataType
+		*id = ItemComponentTypeCustomData
+	case *ItemComponentMaxStackSize:
+		*id = ItemComponentTypeMaxStackSize
+	case *ItemComponentMaxDamage:
+		*id = ItemComponentTypeMaxDamage
+	case *ItemComponentDamage:
+		*id = ItemComponentTypeDamage
+	case *ItemComponentUnbreakable:
+		*id = ItemComponentTypeUnbreakable
+	case *ItemComponentCustomName:
+		*id = ItemComponentTypeCustomName
+	case *ItemComponentItemName:
+		*id = ItemComponentTypeItemName
+	case *ItemComponentItemModel:
+		*id = ItemComponentTypeItemModel
+	case *ItemComponentLore:
+		*id = ItemComponentTypeLore
+	case *ItemComponentRarity:
+		*id = ItemComponentTypeRarity
+	case *ItemComponentEnchantments:
+		*id = ItemComponentTypeEnchantments
+	case *ItemComponentCanPlaceOn:
+		*id = ItemComponentTypeCanPlaceOn
+	case *ItemComponentCanBreak:
+		*id = ItemComponentTypeCanBreak
+	case *ItemComponentAttributeModifiers:
+		*id = ItemComponentTypeAttributeModifiers
+	case *ItemComponentCustomModelData:
+		*id = ItemComponentTypeCustomModelData
+	case *ItemComponentHideAdditionalTooltip:
+		*id = ItemComponentTypeHideAdditionalTooltip
+	case *ItemComponentHideTooltip:
+		*id = ItemComponentTypeHideTooltip
+	case *ItemComponentRepairCost:
+		*id = ItemComponentTypeRepairCost
+	case *ItemComponentCreativeSlotLock:
+		*id = ItemComponentTypeCreativeSlotLock
+	case *ItemComponentEnchantmentGlintOverride:
+		*id = ItemComponentTypeEnchantmentGlintOverride
+	case *ItemComponentIntangibleProjectile:
+		*id = ItemComponentTypeIntangibleProjectile
+	case *ItemComponentFood:
+		*id = ItemComponentTypeFood
+	case *ItemComponentConsumable:
+		*id = ItemComponentTypeConsumable
+	case *ItemComponentUseRemainder:
+		*id = ItemComponentTypeUseRemainder
+	case *ItemComponentUseCooldown:
+		*id = ItemComponentTypeUseCooldown
+	case *ItemComponentDamageResistant:
+		*id = ItemComponentTypeDamageResistant
+	case *ItemComponentTool:
+		*id = ItemComponentTypeTool
+	case *ItemComponentEnchantable:
+		*id = ItemComponentTypeEnchantable
+	case *ItemComponentEquippable:
+		*id = ItemComponentTypeEquippable
+	case *ItemComponentRepairable:
+		*id = ItemComponentTypeRepairable
+	case *ItemComponentGlider:
+		*id = ItemComponentTypeGlider
+	case *ItemComponentTooltipStyle:
+		*id = ItemComponentTypeTooltipStyle
+	case *ItemComponentDeathProtection:
+		*id = ItemComponentTypeDeathProtection
+	case *ItemComponentStoredEnchantments:
+		*id = ItemComponentTypeStoredEnchantments
+	case *ItemComponentDyedColor:
+		*id = ItemComponentTypeDyedColor
+	case *ItemComponentMapColor:
+		*id = ItemComponentTypeMapColor
+	case *ItemComponentMapID:
+		*id = ItemComponentTypeMapID
+	case *ItemComponentMapDecorations:
+		*id = ItemComponentTypeMapDecorations
+	case *ItemComponentMapPostProcessing:
+		*id = ItemComponentTypeMapPostProcessing
+	case *ItemComponentChargedProjectiles:
+		*id = ItemComponentTypeChargedProjectiles
+	case *ItemComponentBundleContents:
+		*id = ItemComponentTypeBundleContents
+	case *ItemComponentPotionContents:
+		*id = ItemComponentTypePotionContents
+	case *ItemComponentSuspiciousStewEffects:
+		*id = ItemComponentTypeSuspiciousStewEffects
+	case *ItemComponentWritableBookContent:
+		*id = ItemComponentTypeWritableBookContent
+	case *ItemComponentWrittenBookContent:
+		*id = ItemComponentTypeWrittenBookContent
+	case *ItemComponentTrim:
+		*id = ItemComponentTypeTrim
+	case *ItemComponentDebugStickState:
+		*id = ItemComponentTypeDebugStickState
+	case *ItemComponentEntityData:
+		*id = ItemComponentTypeEntityData
+	case *ItemComponentBucketEntityData:
+		*id = ItemComponentTypeBucketEntityData
+	case *ItemComponentBlockEntityData:
+		*id = ItemComponentTypeBlockEntityData
+	case *ItemComponentInstrument:
+		*id = ItemComponentTypeInstrument
+	case *ItemComponentOminousBottleAmplifier:
+		*id = ItemComponentTypeOminousBottleAmplifier
+	case *ItemComponentJukeboxPlayable:
+		*id = ItemComponentTypeJukeboxPlayable
+	case *ItemComponentRecipes:
+		*id = ItemComponentTypeRecipes
+	case *ItemComponentLodestoneTracker:
+		*id = ItemComponentTypeLodestoneTracker
+	case *ItemComponentFireworkExplosion:
+		*id = ItemComponentTypeFireworkExplosion
+	case *ItemComponentFireworks:
+		*id = ItemComponentTypeFireworks
+	case *ItemComponentProfile:
+		*id = ItemComponentTypeProfile
+	case *ItemComponentNoteBlockSound:
+		*id = ItemComponentTypeNoteBlockSound
+	case *ItemComponentBannerPatterns:
+		*id = ItemComponentTypeBannerPatterns
+	case *ItemComponentBaseColor:
+		*id = ItemComponentTypeBaseColor
+	case *ItemComponentPotDecorations:
+		*id = ItemComponentTypePotDecorations
+	case *ItemComponentContainer:
+		*id = ItemComponentTypeContainer
+	case *ItemComponentBlockState:
+		*id = ItemComponentTypeBlockState
+	case *ItemComponentBees:
+		*id = ItemComponentTypeBees
+	case *ItemComponentLock:
+		*id = ItemComponentTypeLock
+	case *ItemComponentContainerLoot:
+		*id = ItemComponentTypeContainerLoot
 	default:
 		return false
 	}
@@ -29,10 +161,142 @@ func lookupItemComponentType(x ItemComponent, id *uint8) bool {
 
 // lookupItemComponent looks up the
 // ItemComponent matching an ID.
-func lookupItemComponent(id uint8, x *ItemComponent) bool {
+func lookupItemComponent(id int32, x *ItemComponent) bool {
 	switch id {
-	case ItemComponentCustomDataType:
+	case ItemComponentTypeCustomData:
 		*x = &ItemComponentCustomData{}
+	case ItemComponentTypeMaxStackSize:
+		*x = &ItemComponentMaxStackSize{}
+	case ItemComponentTypeMaxDamage:
+		*x = &ItemComponentMaxDamage{}
+	case ItemComponentTypeDamage:
+		*x = &ItemComponentDamage{}
+	case ItemComponentTypeUnbreakable:
+		*x = &ItemComponentUnbreakable{}
+	case ItemComponentTypeCustomName:
+		*x = &ItemComponentCustomName{}
+	case ItemComponentTypeItemName:
+		*x = &ItemComponentItemName{}
+	case ItemComponentTypeItemModel:
+		*x = &ItemComponentItemModel{}
+	case ItemComponentTypeLore:
+		*x = &ItemComponentLore{}
+	case ItemComponentTypeRarity:
+		*x = &ItemComponentRarity{}
+	case ItemComponentTypeEnchantments:
+		*x = &ItemComponentEnchantments{}
+	case ItemComponentTypeCanPlaceOn:
+		*x = &ItemComponentCanPlaceOn{}
+	case ItemComponentTypeCanBreak:
+		*x = &ItemComponentCanBreak{}
+	case ItemComponentTypeAttributeModifiers:
+		*x = &ItemComponentAttributeModifiers{}
+	case ItemComponentTypeCustomModelData:
+		*x = &ItemComponentCustomModelData{}
+	case ItemComponentTypeHideAdditionalTooltip:
+		*x = &ItemComponentHideAdditionalTooltip{}
+	case ItemComponentTypeHideTooltip:
+		*x = &ItemComponentHideTooltip{}
+	case ItemComponentTypeRepairCost:
+		*x = &ItemComponentRepairCost{}
+	case ItemComponentTypeCreativeSlotLock:
+		*x = &ItemComponentCreativeSlotLock{}
+	case ItemComponentTypeEnchantmentGlintOverride:
+		*x = &ItemComponentEnchantmentGlintOverride{}
+	case ItemComponentTypeIntangibleProjectile:
+		*x = &ItemComponentIntangibleProjectile{}
+	case ItemComponentTypeFood:
+		*x = &ItemComponentFood{}
+	case ItemComponentTypeConsumable:
+		*x = &ItemComponentConsumable{}
+	case ItemComponentTypeUseRemainder:
+		*x = &ItemComponentUseRemainder{}
+	case ItemComponentTypeUseCooldown:
+		*x = &ItemComponentUseCooldown{}
+	case ItemComponentTypeDamageResistant:
+		*x = &ItemComponentDamageResistant{}
+	case ItemComponentTypeTool:
+		*x = &ItemComponentTool{}
+	case ItemComponentTypeEnchantable:
+		*x = &ItemComponentEnchantable{}
+	case ItemComponentTypeEquippable:
+		*x = &ItemComponentEquippable{}
+	case ItemComponentTypeRepairable:
+		*x = &ItemComponentRepairable{}
+	case ItemComponentTypeGlider:
+		*x = &ItemComponentGlider{}
+	case ItemComponentTypeTooltipStyle:
+		*x = &ItemComponentTooltipStyle{}
+	case ItemComponentTypeDeathProtection:
+		*x = &ItemComponentDeathProtection{}
+	case ItemComponentTypeStoredEnchantments:
+		*x = &ItemComponentStoredEnchantments{}
+	case ItemComponentTypeDyedColor:
+		*x = &ItemComponentDyedColor{}
+	case ItemComponentTypeMapColor:
+		*x = &ItemComponentMapColor{}
+	case ItemComponentTypeMapID:
+		*x = &ItemComponentMapID{}
+	case ItemComponentTypeMapDecorations:
+		*x = &ItemComponentMapDecorations{}
+	case ItemComponentTypeMapPostProcessing:
+		*x = &ItemComponentMapPostProcessing{}
+	case ItemComponentTypeChargedProjectiles:
+		*x = &ItemComponentChargedProjectiles{}
+	case ItemComponentTypeBundleContents:
+		*x = &ItemComponentBundleContents{}
+	case ItemComponentTypePotionContents:
+		*x = &ItemComponentPotionContents{}
+	case ItemComponentTypeSuspiciousStewEffects:
+		*x = &ItemComponentSuspiciousStewEffects{}
+	case ItemComponentTypeWritableBookContent:
+		*x = &ItemComponentWritableBookContent{}
+	case ItemComponentTypeWrittenBookContent:
+		*x = &ItemComponentWrittenBookContent{}
+	case ItemComponentTypeTrim:
+		*x = &ItemComponentTrim{}
+	case ItemComponentTypeDebugStickState:
+		*x = &ItemComponentDebugStickState{}
+	case ItemComponentTypeEntityData:
+		*x = &ItemComponentEntityData{}
+	case ItemComponentTypeBucketEntityData:
+		*x = &ItemComponentBucketEntityData{}
+	case ItemComponentTypeBlockEntityData:
+		*x = &ItemComponentBlockEntityData{}
+	case ItemComponentTypeInstrument:
+		*x = &ItemComponentInstrument{}
+	case ItemComponentTypeOminousBottleAmplifier:
+		*x = &ItemComponentOminousBottleAmplifier{}
+	case ItemComponentTypeJukeboxPlayable:
+		*x = &ItemComponentJukeboxPlayable{}
+	case ItemComponentTypeRecipes:
+		*x = &ItemComponentRecipes{}
+	case ItemComponentTypeLodestoneTracker:
+		*x = &ItemComponentLodestoneTracker{}
+	case ItemComponentTypeFireworkExplosion:
+		*x = &ItemComponentFireworkExplosion{}
+	case ItemComponentTypeFireworks:
+		*x = &ItemComponentFireworks{}
+	case ItemComponentTypeProfile:
+		*x = &ItemComponentProfile{}
+	case ItemComponentTypeNoteBlockSound:
+		*x = &ItemComponentNoteBlockSound{}
+	case ItemComponentTypeBannerPatterns:
+		*x = &ItemComponentBannerPatterns{}
+	case ItemComponentTypeBaseColor:
+		*x = &ItemComponentBaseColor{}
+	case ItemComponentTypePotDecorations:
+		*x = &ItemComponentPotDecorations{}
+	case ItemComponentTypeContainer:
+		*x = &ItemComponentContainer{}
+	case ItemComponentTypeBlockState:
+		*x = &ItemComponentBlockState{}
+	case ItemComponentTypeBees:
+		*x = &ItemComponentBees{}
+	case ItemComponentTypeLock:
+		*x = &ItemComponentLock{}
+	case ItemComponentTypeContainerLoot:
+		*x = &ItemComponentContainerLoot{}
 	default:
 		return false
 	}
@@ -317,8 +581,8 @@ func (i *ItemComponentHideTooltip) Marshal(io IO) {}
 // Set Container Property packet.
 //
 // Helpful links:
-// 		- insta-build flag enabled (https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Protocol#Player_Abilities_(clientbound))
-//		- Set Container Property (https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Protocol#Set_Container_Property)
+//   - insta-build flag enabled (https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Protocol#Player_Abilities_(clientbound))
+//   - Set Container Property (https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Protocol#Set_Container_Property)
 type ItemComponentRepairCost struct {
 	// Cost ..
 	Cost int32
@@ -450,10 +714,9 @@ func (i *ItemComponentConsumable) Marshal(io IO) {
 // the current item.
 // In the Notchian server, this is used for stews,
 // which turn into bowls.
-// TODO
 type ItemComponentUseRemainder struct {
 	// How long it takes to consume the item.
-	Remainder any
+	Remainder ItemStack
 }
 
 func (i *ItemComponentUseRemainder) Name() string {
@@ -461,7 +724,7 @@ func (i *ItemComponentUseRemainder) Name() string {
 }
 
 func (i *ItemComponentUseRemainder) Marshal(io IO) {
-	// TODO
+	io.ItemStack(&i.Remainder)
 }
 
 // Cooldown to apply on use of the item.
@@ -616,6 +879,20 @@ func (i *ItemComponentGlider) Name() string {
 
 func (i *ItemComponentGlider) Marshal(io IO) {}
 
+// Custom textures for the item tooltip.
+type ItemComponentTooltipStyle struct {
+	// Style ..
+	Style Identifier
+}
+
+func (i *ItemComponentTooltipStyle) Name() string {
+	return "minecraft:tooltip_style"
+}
+
+func (i *ItemComponentTooltipStyle) Marshal(io IO) {
+	Single(io, &i.Style)
+}
+
 // Makes the item function like a totem of undying.
 type ItemComponentDeathProtection struct {
 	// Effects to apply on consumption.
@@ -740,8 +1017,7 @@ func (i *ItemComponentMapPostProcessing) Marshal(io IO) {
 // Projectiles loaded into a charged crossbow.
 type ItemComponentChargedProjectiles struct {
 	// Projectiles ..
-	// TODO
-	Projectiles []any
+	Projectiles []ItemStack
 }
 
 func (i *ItemComponentChargedProjectiles) Name() string {
@@ -749,5 +1025,491 @@ func (i *ItemComponentChargedProjectiles) Name() string {
 }
 
 func (i *ItemComponentChargedProjectiles) Marshal(io IO) {
-	// TODO
+	FuncSliceVarint32Length(io, &i.Projectiles, io.ItemStack)
+}
+
+// Contents of a bundle.
+type ItemComponentBundleContents struct {
+	// The projectiles.
+	Items []ItemStack
+}
+
+func (i *ItemComponentBundleContents) Name() string {
+	return "minecraft:bundle_contents"
+}
+
+func (i *ItemComponentBundleContents) Marshal(io IO) {
+	FuncSliceVarint32Length(io, &i.Items, io.ItemStack)
+}
+
+// Visual and effects of a potion item.
+type ItemComponentPotionContents struct {
+	// Whether this potion has an
+	// ID in the potion registry.
+	//
+	// If this field existed, it
+	// means it has the default
+	// effects associated with the
+	// potion type.
+	PotionID Optional[int32]
+	// Whether this potion has a custom color.
+	// If this field not existed, it means it
+	// uses the default color associated with
+	// the potion type.
+	//
+	// CustomColor is the RGB components of the
+	// color, encoded as an integer.
+	CustomColor Optional[int32]
+	// Any custom effects the potion might have.
+	// See Potion Effect (https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Slot_Data#Potion_Effect).
+	CustomEffects []PotionEffect
+	// CustomName ..
+	CustomName string
+}
+
+func (i *ItemComponentPotionContents) Name() string {
+	return "minecraft:potion_contents"
+}
+
+func (i *ItemComponentPotionContents) Marshal(io IO) {
+	OptionalFunc(io, &i.PotionID, io.Varint32)
+	OptionalFunc(io, &i.CustomColor, io.Int32)
+	SliceVarint32Length(io, &i.CustomEffects)
+	io.String(&i.CustomName)
+}
+
+// Effects granted by a suspicious stew.
+type ItemComponentSuspiciousStewEffects struct {
+	// Effect ..
+	Effect []Effect
+}
+
+func (i *ItemComponentSuspiciousStewEffects) Name() string {
+	return "minecraft:suspicious_stew_effects"
+}
+
+func (i *ItemComponentSuspiciousStewEffects) Marshal(io IO) {
+	SliceVarint32Length(io, &i.Effect)
+}
+
+// Content of a writable book.
+type ItemComponentWritableBookContent struct {
+	// Page ..
+	Page []BookPage
+}
+
+func (i *ItemComponentWritableBookContent) Name() string {
+	return "minecraft:writable_book_content"
+}
+
+func (i *ItemComponentWritableBookContent) Marshal(io IO) {
+	SliceVarint32Length(io, &i.Page)
+}
+
+// Content of a writable book.
+type ItemComponentWrittenBookContent struct {
+	// The raw title of the book.
+	RawTitle string
+	// The title after going through chat filters.
+	FilteredTitle Optional[string]
+	// Author ..
+	Author string
+	// Generation ..
+	Generation int32
+	// Page ..
+	Page []BookPage
+	// Whether entity selectors have already been resolved.
+	Resolved bool
+}
+
+func (i *ItemComponentWrittenBookContent) Name() string {
+	return "minecraft:written_book_content"
+}
+
+func (i *ItemComponentWrittenBookContent) Marshal(io IO) {
+	io.String(&i.RawTitle)
+	OptionalFunc(io, &i.FilteredTitle, io.String)
+	io.String(&i.Author)
+	io.Varint32(&i.Generation)
+	SliceVarint32Length(io, &i.Page)
+	io.Bool(&i.Resolved)
+}
+
+// Armor's trim pattern and color.
+type ItemComponentTrim struct {
+	// ID in the minecraft:trim_material
+	// registry, or an inline definition.
+	TrimMaterial IDOrX[ArmorTrimMaterial]
+	// ID in the minecraft:trim_pattern
+	// registry, or an inline definition.
+	TrimPattern IDOrX[ArmorTrimMaterial]
+	// Whether the trim information should
+	// be shown on the item's tooltip.
+	ShowInTooltip bool
+}
+
+func (i *ItemComponentTrim) Name() string {
+	return "minecraft:trim"
+}
+
+func (i *ItemComponentTrim) Marshal(io IO) {
+	IDOrXMarshaler(io, &i.TrimMaterial)
+	IDOrXMarshaler(io, &i.TrimPattern)
+	io.Bool(&i.ShowInTooltip)
+}
+
+// State of the debug stick.
+type ItemComponentDebugStickState struct {
+	// States of previously interacted blocks.
+	// Always a Compound Tag.
+	Data map[string]any
+}
+
+func (i *ItemComponentDebugStickState) Name() string {
+	return "minecraft:debug_stick_state"
+}
+
+func (i *ItemComponentDebugStickState) Marshal(io IO) {
+	io.NBT(&i.Data, nbt.NetworkBigEndian)
+}
+
+// Data for the entity to be created from this item.
+type ItemComponentEntityData struct {
+	// Always a Compound Tag.
+	Data map[string]any
+}
+
+func (i *ItemComponentEntityData) Name() string {
+	return "minecraft:entity_data"
+}
+
+func (i *ItemComponentEntityData) Marshal(io IO) {
+	io.NBT(&i.Data, nbt.NetworkBigEndian)
+}
+
+// Data of the entity contained in this bucket.
+type ItemComponentBucketEntityData struct {
+	// Always a Compound Tag.
+	Data map[string]any
+}
+
+func (i *ItemComponentBucketEntityData) Name() string {
+	return "minecraft:bucket_entity_data"
+}
+
+func (i *ItemComponentBucketEntityData) Marshal(io IO) {
+	io.NBT(&i.Data, nbt.NetworkBigEndian)
+}
+
+// Data of the block entity to be created from this item.
+type ItemComponentBlockEntityData struct {
+	// Always a Compound Tag.
+	Data map[string]any
+}
+
+func (i *ItemComponentBlockEntityData) Name() string {
+	return "minecraft:block_entity_data"
+}
+
+func (i *ItemComponentBlockEntityData) Marshal(io IO) {
+	io.NBT(&i.Data, nbt.NetworkBigEndian)
+}
+
+// The sound played when using a goat horn.
+type ItemComponentInstrument struct {
+	// ID in the minecraft:instrument
+	// registry, or an inline definition.
+	Instrument IDOrX[Instrument]
+}
+
+func (i *ItemComponentInstrument) Name() string {
+	return "minecraft:instrument"
+}
+
+func (i *ItemComponentInstrument) Marshal(io IO) {
+	IDOrXMarshaler(io, &i.Instrument)
+}
+
+// Amplifier for the effect of an ominous bottle.
+type ItemComponentOminousBottleAmplifier struct {
+	// Between 0 and 4.
+	Amplifier int32
+}
+
+func (i *ItemComponentOminousBottleAmplifier) Name() string {
+	return "minecraft:ominous_bottle_amplifier"
+}
+
+func (i *ItemComponentOminousBottleAmplifier) Marshal(io IO) {
+	io.Varint32(&i.Amplifier)
+}
+
+// The song this item will play when inserted into a jukebox.
+type ItemComponentJukeboxPlayable struct {
+	// Whether the jukebox song is specified
+	// directly, or just referenced by name.
+	DirectMode bool
+	// The name of the jukebox song in its
+	// respective registry.
+	// Only present if Direct Mode is false.
+	JukeboxSongName Identifier
+	// ID in the minecraft:jukebox_song registry.
+	// Only present if Direct Mode is true.
+	JukeboxSong IDOrX[JukeboxSong]
+	// Whether the song should be shown on the item's tooltip.
+	ShowInTooltip bool
+}
+
+func (i *ItemComponentJukeboxPlayable) Name() string {
+	return "minecraft:jukebox_playable"
+}
+
+func (i *ItemComponentJukeboxPlayable) Marshal(io IO) {
+	io.Bool(&i.DirectMode)
+	if !i.DirectMode {
+		Single(io, &i.JukeboxSongName)
+	} else {
+		IDOrXMarshaler(io, &i.JukeboxSong)
+	}
+	io.Bool(&i.ShowInTooltip)
+}
+
+// The recipes this knowledge book unlocks.
+type ItemComponentRecipes struct {
+	// Always a Compound Tag.
+	Data map[string]any
+}
+
+func (i *ItemComponentRecipes) Name() string {
+	return "minecraft:recipes"
+}
+
+func (i *ItemComponentRecipes) Marshal(io IO) {
+	io.NBT(&i.Data, nbt.NetworkBigEndian)
+}
+
+// The lodestone this compass points to.
+type ItemComponentLodestoneTracker struct {
+	// Whether this lodestone points to a position,
+	// otherwise it spins randomly.
+	HasGlobalPosition bool
+	// The dimension the compass points to.
+	// Only present if Has Global Position is true.
+	Dimension Identifier
+	// The position the compass points to.
+	// Only present if Has Global Position is true.
+	Position BlockPos
+	// Whether the component is removed when
+	// the associated lodestone is broken.
+	Tracked bool
+}
+
+func (i *ItemComponentLodestoneTracker) Name() string {
+	return "minecraft:lodestone_tracker"
+}
+
+func (i *ItemComponentLodestoneTracker) Marshal(io IO) {
+	io.Bool(&i.HasGlobalPosition)
+	if i.HasGlobalPosition {
+		Single(io, &i.Dimension)
+		io.Position(&i.Position)
+	}
+	io.Bool(&i.Tracked)
+}
+
+// Properties of a firework star.
+type ItemComponentFireworkExplosion struct {
+	// See Firework Explosion.
+	// (https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Slot_Data#Firework_Explosion).
+	Explosion FireworkExplosion
+}
+
+func (i *ItemComponentFireworkExplosion) Name() string {
+	return "minecraft:firework_explosion"
+}
+
+func (i *ItemComponentFireworkExplosion) Marshal(io IO) {
+	Single(io, &i.Explosion)
+}
+
+// The lodestone this compass points to.
+type ItemComponentFireworks struct {
+	// FlightDuration ..
+	FlightDuration int32
+	// See Firework Explosion
+	// (https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Slot_Data#Firework_Explosion).
+	Explosions []FireworkExplosion
+}
+
+func (i *ItemComponentFireworks) Name() string {
+	return "minecraft:fireworks"
+}
+
+func (i *ItemComponentFireworks) Marshal(io IO) {
+	io.Int32(&i.FlightDuration)
+	SliceVarint32Length(io, &i.Explosions)
+}
+
+// Game Profile of a player's head.
+type ItemComponentProfile struct {
+	// ProfileName ..
+	ProfileName Optional[string]
+	// UniqueID ..
+	UniqueID Optional[uuid.UUID]
+	// Property ..
+	Property []PlayerProfileProperty
+}
+
+func (i *ItemComponentProfile) Name() string {
+	return "minecraft:profile"
+}
+
+func (i *ItemComponentProfile) Marshal(io IO) {
+	OptionalFunc(io, &i.ProfileName, io.String)
+	OptionalFunc(io, &i.UniqueID, io.UUID)
+	SliceVarint32Length(io, &i.Property)
+}
+
+// Sound played by a note block when this
+// player's head is placed on top of it.
+type ItemComponentNoteBlockSound struct {
+	// Sound ..
+	Sound Identifier
+}
+
+func (i *ItemComponentNoteBlockSound) Name() string {
+	return "minecraft:note_block_sound"
+}
+
+func (i *ItemComponentNoteBlockSound) Marshal(io IO) {
+	Single(io, &i.Sound)
+}
+
+// Patterns of a banner or banner applied to a shield.
+type ItemComponentBannerPatterns struct {
+	// Layer ..
+	Layer []BannerPatterns
+}
+
+func (i *ItemComponentBannerPatterns) Name() string {
+	return "minecraft:banner_patterns"
+}
+
+func (i *ItemComponentBannerPatterns) Marshal(io IO) {
+	SliceVarint32Length(io, &i.Layer)
+}
+
+// Base color of the banner applied to a shield.
+type ItemComponentBaseColor struct {
+	// Dye color.
+	// Can be one of the following:
+	// 		0 - White
+	// 		1 - Orange
+	// 		2 - Magenta
+	// 		3 - Light Blue
+	// 		4 - Yellow
+	// 		5 - Lime
+	// 		6 - Pink
+	// 		7 - Gray
+	// 		8 - Light Gray
+	// 		9 - Cyan
+	// 		10 - Purple
+	// 		11 - Blue
+	// 		12 - Brown
+	// 		13 - Green
+	// 		14 - Red
+	// 		15 - Black
+	Color int32
+}
+
+func (i *ItemComponentBaseColor) Name() string {
+	return "minecraft:base_color"
+}
+
+func (i *ItemComponentBaseColor) Marshal(io IO) {
+	io.Varint32(&i.Color)
+}
+
+// Decorations on the four sides of a pot.
+type ItemComponentPotDecorations struct {
+	// The ID of the items in the item registry.
+	Decorations []int32
+}
+
+func (i *ItemComponentPotDecorations) Name() string {
+	return "minecraft:pot_decorations"
+}
+
+func (i *ItemComponentPotDecorations) Marshal(io IO) {
+	FuncSliceVarint32Length(io, &i.Decorations, io.Varint32)
+}
+
+// Items inside a container of any type.
+type ItemComponentContainer struct {
+	// Items ..
+	Items []ItemStack
+}
+
+func (i *ItemComponentContainer) Name() string {
+	return "minecraft:container"
+}
+
+func (i *ItemComponentContainer) Marshal(io IO) {
+	FuncSliceVarint32Length(io, &i.Items, io.ItemStack)
+}
+
+// State of a block.
+type ItemComponentBlockState struct {
+	// Property ..
+	Property []BlockStates
+}
+
+func (i *ItemComponentBlockState) Name() string {
+	return "minecraft:block_state"
+}
+
+func (i *ItemComponentBlockState) Marshal(io IO) {
+	SliceVarint32Length(io, &i.Property)
+}
+
+// Bees inside a hive.
+type ItemComponentBees struct {
+	// Bee ..
+	Bee []ItemComponentBeeData
+}
+
+func (i *ItemComponentBees) Name() string {
+	return "minecraft:bees"
+}
+
+func (i *ItemComponentBees) Marshal(io IO) {
+	SliceVarint32Length(io, &i.Bee)
+}
+
+// Bees inside a hive.
+type ItemComponentLock struct {
+	// Always a String Tag.
+	Key string
+}
+
+func (i *ItemComponentLock) Name() string {
+	return "minecraft:lock"
+}
+
+func (i *ItemComponentLock) Marshal(io IO) {
+	io.NBTString(&i.Key, nbt.NetworkBigEndian)
+}
+
+// Bees inside a hive.
+type ItemComponentContainerLoot struct {
+	// Always a Compound Tag.
+	Data map[string]any
+}
+
+func (i *ItemComponentContainerLoot) Name() string {
+	return "minecraft:container_loot"
+}
+
+func (i *ItemComponentContainerLoot) Marshal(io IO) {
+	io.NBT(&i.Data, nbt.NetworkBigEndian)
 }
