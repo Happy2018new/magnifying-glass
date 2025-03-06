@@ -1,5 +1,35 @@
 package encoding
 
+import "magnifying-glass/minecraft/nbt"
+
+// TextComponentString reads an TextComponentString from the reader.
+func (r *Reader) TextComponentString(x *TextComponentString) {
+	r.String((*string)(x))
+}
+
+// TextComponentComplex reads an TextComponentComplex from the reader.
+func (r *Reader) TextComponentComplex(x *TextComponentComplex) {
+	r.NBT((*map[string]any)(x), nbt.NetworkBigEndian)
+}
+
+// TextComponentComplexOptional reads an TextComponentComplexOptional from the reader.
+func (r *Reader) TextComponentComplexOptional(x *TextComponentComplexOptional) {
+	r.Bool(&x.Existed)
+	if x.Existed {
+		r.NBT(&x.Data, nbt.NetworkBigEndian)
+	}
+}
+
+// JsonTextComponent reads an JsonTextComponent from the reader.
+func (r *Reader) JsonTextComponent(x *JsonTextComponent) {
+	r.NBTString((*string)(x), nbt.NetworkBigEndian)
+}
+
+// Identifier reads an Identifier from the reader.
+func (r *Reader) Identifier(x *Identifier) {
+	r.String((*string)(x))
+}
+
 // ConsumeEffect reads an ConsumeEffect from the reader.
 func (r *Reader) ConsumeEffect(x *ConsumeEffect) {
 	var t int32

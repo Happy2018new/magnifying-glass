@@ -18,12 +18,6 @@ package encoding
 // 		- Value: [a-z0-9.-_/]
 type Identifier string
 
-func (i *Identifier) Marshal(io IO) {
-	str := string(*i)
-	io.String(&str)
-	*i = Identifier(str)
-}
-
 const IDSetTypeTagDefined int32 = 0
 
 // Represents a set of IDs in a certain
@@ -47,7 +41,7 @@ type IDSet struct {
 func (i *IDSet) Marshal(io IO) {
 	io.Varint32(&i.Type)
 	if i.Type == IDSetTypeTagDefined {
-		Single(io, &i.TagName)
+		io.Identifier(&i.TagName)
 	} else {
 		FuncSliceOfLen(io, uint32(i.Type)-1, &i.IDs, io.Varint32)
 	}

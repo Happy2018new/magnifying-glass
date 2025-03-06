@@ -86,11 +86,11 @@ func (w *Writer) EntityMetadata(x *EntityMetadata) {
 		case TextComponentComplex:
 			entityDataTypeTextCompound := EntityDataTypeTextCompound
 			w.Varint32(&entityDataTypeTextCompound)
-			v.Marshal(w)
+			w.TextComponentComplex(&v)
 		case TextComponentComplexOptional:
 			entityDataTypeOptionalTextCompound := EntityDataTypeOptionalTextCompound
 			w.Varint32(&entityDataTypeOptionalTextCompound)
-			v.Marshal(w)
+			w.TextComponentComplexOptional(&v)
 		// case map[string]any:
 		// 	entityDataTypeCompoundTag := EntityDataTypeCompoundTag
 		// 	w.Varuint32(&entityDataTypeCompoundTag)

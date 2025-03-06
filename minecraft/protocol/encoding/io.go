@@ -15,27 +15,34 @@ import (
 // passed, whereas Writer writes the values the pointers
 // point point to the output stream.
 type IO interface {
-	Uint8(x *uint8)
-	Int8(x *int8)
-	Uint16(x *uint16)
-	Int16(x *int16)
 	Uint32(x *uint32)
-	Int32(x *int32)
 	Uint64(x *uint64)
-	Int64(x *int64)
-
-	Varint64(x *int64)
 	Varuint64(x *uint64)
-	Varint32(x *int32)
 	Varuint32(x *uint32)
-	Varint16(x *int16)
 	Varuint16(x *uint16)
-
-	Float32(x *float32)
-	Float64(x *float64)
+	Varint16(x *int16)
 
 	Bool(x *bool)
+	Int8(x *int8)
+	Uint8(x *uint8)
+	Int16(x *int16)
+	Uint16(x *uint16)
+	Int32(x *int32)
+	Int64(x *int64)
+	Float32(x *float32)
+	Float64(x *float64)
 	String(x *string)
+	TextComponentString(x *TextComponentString)
+	TextComponentComplex(x *TextComponentComplex)
+	TextComponentComplexOptional(x *TextComponentComplexOptional)
+	JsonTextComponent(x *JsonTextComponent)
+	Identifier(x *Identifier)
+	Varint32(x *int32)
+	Varint64(x *int64)
+
+	NBT(m *map[string]any, encoding nbt.Encoding)
+	NBTList(m *[]any, encoding nbt.Encoding)
+	NBTString(x *string, encoding nbt.Encoding)
 
 	ConsumeEffect(x *ConsumeEffect) // new
 	Position(x *BlockPos)           // new
@@ -53,9 +60,6 @@ type IO interface {
 	// SoundPos(x *mgl32.Vec3)
 	// ByteFloat(x *float32)
 	// Bytes(p *[]byte)
-	NBT(m *map[string]any, encoding nbt.Encoding)
-	NBTList(m *[]any, encoding nbt.Encoding)
-	NBTString(x *string, encoding nbt.Encoding)
 	UUID(x *uuid.UUID)
 	// RGB(x *color.RGBA)
 	// RGBA(x *color.RGBA)

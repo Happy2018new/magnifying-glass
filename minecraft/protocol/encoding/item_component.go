@@ -385,7 +385,7 @@ func (i *ItemComponentCustomName) Name() string {
 }
 
 func (i *ItemComponentCustomName) Marshal(io IO) {
-	Single(io, &i.CustomName)
+	io.TextComponentComplex(&i.CustomName)
 }
 
 // Override for the item's default name.
@@ -399,7 +399,7 @@ func (i *ItemComponentItemName) Name() string {
 }
 
 func (i *ItemComponentItemName) Marshal(io IO) {
-	Single(io, &i.ItemName)
+	io.TextComponentComplex(&i.ItemName)
 }
 
 // Item's model.
@@ -412,7 +412,7 @@ func (i *ItemComponentItemModel) Name() string {
 }
 
 func (i *ItemComponentItemModel) Marshal(io IO) {
-	Single(io, &i.Model)
+	io.Identifier(&i.Model)
 }
 
 // Item's lore.
@@ -425,7 +425,7 @@ func (i *ItemComponentLore) Name() string {
 }
 
 func (i *ItemComponentLore) Marshal(io IO) {
-	SliceVarint32Length(io, &i.Lines)
+	FuncSliceVarint32Length(io, &i.Lines, io.TextComponentComplex)
 }
 
 const (
@@ -742,7 +742,7 @@ func (i *ItemComponentUseCooldown) Name() string {
 
 func (i *ItemComponentUseCooldown) Marshal(io IO) {
 	io.Float32(&i.Seconds)
-	OptionalMarshaler(io, &i.CooldownGroup)
+	OptionalFunc(io, &i.CooldownGroup, io.Identifier)
 }
 
 // Marks this item as damage resistant.
@@ -761,7 +761,7 @@ func (i *ItemComponentDamageResistant) Name() string {
 }
 
 func (i *ItemComponentDamageResistant) Marshal(io IO) {
-	Single(io, &i.Types)
+	io.Identifier(&i.Types)
 }
 
 // Alters the speed at which this
@@ -847,8 +847,8 @@ func (i *ItemComponentEquippable) Name() string {
 func (i *ItemComponentEquippable) Marshal(io IO) {
 	io.Varint32(&i.Slot)
 	IDOrXMarshaler(io, &i.EquipSound)
-	OptionalMarshaler(io, &i.Model)
-	OptionalMarshaler(io, &i.CameraOverlay)
+	OptionalFunc(io, &i.Model, io.Identifier)
+	OptionalFunc(io, &i.CameraOverlay, io.Identifier)
 	OptionalMarshaler(io, &i.AllowedEntities)
 	io.Bool(&i.Dispensable)
 	io.Bool(&i.Swappable)
@@ -890,7 +890,7 @@ func (i *ItemComponentTooltipStyle) Name() string {
 }
 
 func (i *ItemComponentTooltipStyle) Marshal(io IO) {
-	Single(io, &i.Style)
+	io.Identifier(&i.Style)
 }
 
 // Makes the item function like a totem of undying.
@@ -1267,7 +1267,7 @@ func (i *ItemComponentJukeboxPlayable) Name() string {
 func (i *ItemComponentJukeboxPlayable) Marshal(io IO) {
 	io.Bool(&i.DirectMode)
 	if !i.DirectMode {
-		Single(io, &i.JukeboxSongName)
+		io.Identifier(&i.JukeboxSongName)
 	} else {
 		IDOrXMarshaler(io, &i.JukeboxSong)
 	}
@@ -1311,7 +1311,7 @@ func (i *ItemComponentLodestoneTracker) Name() string {
 func (i *ItemComponentLodestoneTracker) Marshal(io IO) {
 	io.Bool(&i.HasGlobalPosition)
 	if i.HasGlobalPosition {
-		Single(io, &i.Dimension)
+		io.Identifier(&i.Dimension)
 		io.Position(&i.Position)
 	}
 	io.Bool(&i.Tracked)
@@ -1382,7 +1382,7 @@ func (i *ItemComponentNoteBlockSound) Name() string {
 }
 
 func (i *ItemComponentNoteBlockSound) Marshal(io IO) {
-	Single(io, &i.Sound)
+	io.Identifier(&i.Sound)
 }
 
 // Patterns of a banner or banner applied to a shield.

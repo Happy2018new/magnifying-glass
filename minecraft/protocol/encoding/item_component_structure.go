@@ -36,7 +36,7 @@ func (a *ArmorTrimMaterial) Marshal(io IO) {
 	io.Varint32(&a.Ingredient)
 	io.Float32(&a.ItemModelIndex)
 	SliceVarint32Length(io, &a.Override)
-	Single(io, &a.Description)
+	io.TextComponentComplex(&a.Description)
 }
 
 // ------------------------- AttributeModifier -------------------------
@@ -93,7 +93,7 @@ type AttributeModifier struct {
 
 func (a *AttributeModifier) Marshal(io IO) {
 	io.Varint32(&a.AttributeID)
-	Single(io, &a.ModifierID)
+	io.Identifier(&a.ModifierID)
 	io.Float64(&a.Value)
 	io.Varint32(&a.Operation)
 	io.Varint32(&a.Slot)
@@ -139,7 +139,7 @@ type BannerPatterns struct {
 func (b *BannerPatterns) Marshal(io IO) {
 	io.Varint32(&b.PatternType)
 	if b.PatternType == BannerPatternsTypeDirectly {
-		Single(io, &b.AssetID)
+		io.Identifier(&b.AssetID)
 		io.String(&b.TranslationKey)
 	}
 	io.Varint32(&b.Color)
@@ -239,7 +239,7 @@ func (i *Instrument) Marshal(io IO) {
 	IDOrXMarshaler(io, &i.SoundEvent)
 	io.Float32(&i.UseDurationa)
 	io.Float32(&i.Range)
-	Single(io, &i.Description)
+	io.TextComponentComplex(&i.Description)
 }
 
 // ------------------------- ItemToolRule -------------------------
@@ -279,7 +279,7 @@ type JukeboxSong struct {
 
 func (j *JukeboxSong) Marshal(io IO) {
 	IDOrXMarshaler(io, &j.SoundEvent)
-	Single(io, &j.Description)
+	io.TextComponentComplex(&j.Description)
 	io.Float32(&j.Duration)
 	io.Varint32(&j.Output)
 }

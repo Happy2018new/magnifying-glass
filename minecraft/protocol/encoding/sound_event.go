@@ -12,6 +12,6 @@ type SoundEvent struct {
 }
 
 func (s *SoundEvent) Marshal(io IO) {
-	Single(io, &s.SoundName)
+	io.Identifier(&s.SoundName)
 	OptionalFunc(io, &s.FixedRange, io.Float32)
 }

@@ -1,6 +1,37 @@
 package encoding
 
-import "fmt"
+import (
+	"fmt"
+	"magnifying-glass/minecraft/nbt"
+)
+
+// TextComponentString writes an TextComponentString to the writer.
+func (w *Writer) TextComponentString(x *TextComponentString) {
+	w.String((*string)(x))
+}
+
+// TextComponentComplex writes an TextComponentComplex to the writer.
+func (w *Writer) TextComponentComplex(x *TextComponentComplex) {
+	w.NBT((*map[string]any)(x), nbt.NetworkBigEndian)
+}
+
+// TextComponentComplexOptional writes an TextComponentComplexOptional to the writer.
+func (w *Writer) TextComponentComplexOptional(x *TextComponentComplexOptional) {
+	w.Bool(&x.Existed)
+	if x.Existed {
+		w.NBT(&x.Data, nbt.NetworkBigEndian)
+	}
+}
+
+// JsonTextComponent writes an JsonTextComponent to the writer.
+func (w *Writer) JsonTextComponent(x *JsonTextComponent) {
+	w.NBTString((*string)(x), nbt.NetworkBigEndian)
+}
+
+// Identifier writes an Identifier to the writer.
+func (w *Writer) Identifier(x *Identifier) {
+	w.String((*string)(x))
+}
 
 // ConsumeEffect writes an ConsumeEffect to the writer.
 func (w *Writer) ConsumeEffect(x *ConsumeEffect) {
