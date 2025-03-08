@@ -9,18 +9,16 @@ import (
 	"magnifying-glass/minecraft/nbt"
 	"magnifying-glass/minecraft/protocol/encoding/basic_encoding"
 	"math"
+	"math/big"
+	"slices"
 	"unsafe"
 
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/google/uuid"
 )
 
-var (
-	// errStringTooLong is an error set if a string decoded using the String method has a length that is too long.
-	errStringTooLong = errors.New("string length overflows a 32-bit integer")
-	// ...
-	errBitsetOverflow = errors.New("bitset overflows size")
-)
+// errStringTooLong is an error set if a string decoded using the String method has a length that is too long.
+var errStringTooLong = errors.New("string length overflows a 32-bit integer")
 
 // Reader implements reading operations for
 // reading types from Minecraft packets.
@@ -81,6 +79,14 @@ func (r *Reader) ByteSlice(x *[]byte) {
 	*x = data
 }
 
+// Vec4 reads four float32s into an mgl32.Vec4 from the underlying buffer.
+func (r *Reader) Vec4(x *mgl32.Vec4) {
+	r.Float32(&x[0])
+	r.Float32(&x[1])
+	r.Float32(&x[2])
+	r.Float32(&x[3])
+}
+
 // Vec3 reads three float32s into an mgl32.Vec3 from the underlying buffer.
 func (r *Reader) Vec3(x *mgl32.Vec3) {
 	r.Float32(&x[0])
@@ -130,35 +136,34 @@ func (r *Reader) Vec2(x *mgl32.Vec2) {
 // 	*x = mgl32.Vec3{float32(b[0]) / 8, float32(b[1]) / 8, float32(b[2]) / 8}
 // }
 
-// ByteFloat reads a rotational float32 from a single byte.
-func (r *Reader) ByteFloat(x *float32) {
+// Angle reads a rotational float32 from a single byte.
+func (r *Reader) Angle(x *float32) {
 	var v uint8
 	r.Uint8(&v)
 	*x = float32(v) * (360.0 / 256.0)
 }
 
-// RGB reads a color.RGBA x from three float32s.
+// RGB reads a color.RGBA x from a 0xRRGGBB uint32.
 func (r *Reader) RGB(x *color.RGBA) {
-	var red, green, blue float32
-	r.Float32(&red)
-	r.Float32(&green)
-	r.Float32(&blue)
+	var v uint32
+	r.Uint32(&v)
 	*x = color.RGBA{
-		R: uint8(red * 255),
-		G: uint8(green * 255),
-		B: uint8(blue * 255),
+		R: byte((v >> 16) & 0xff),
+		G: byte((v >> 8) & 0xff),
+		B: byte(v & 0xff),
+		A: 255,
 	}
 }
 
-// RGBA reads a color.RGBA x from a uint32.
+// RGBA reads a color.RGBA x from a 0xAARRGGBB uint32.
 func (r *Reader) RGBA(x *color.RGBA) {
 	var v uint32
 	r.Uint32(&v)
 	*x = color.RGBA{
-		R: byte(v),
-		G: byte(v >> 8),
-		B: byte(v >> 16),
-		A: byte(v >> 24),
+		A: byte((v >> 24) & 0xff),
+		R: byte((v >> 16) & 0xff),
+		G: byte((v >> 8) & 0xff),
+		B: byte(v & 0xff),
 	}
 }
 
@@ -202,12 +207,12 @@ func (r *Reader) NBTList(m *[]any, encoding nbt.Encoding) {
 }
 
 // NBTString reads a string tag into a string from the underlying buffer.
-func (r *Reader) NBTString(str *string, encoding nbt.Encoding) {
+func (r *Reader) NBTString(s *string, encoding nbt.Encoding) {
 	dec := nbt.NewDecoderWithEncoding(r.Reader(), encoding)
 	dec.AllowZero = true
 
-	*str = ""
-	if err := dec.Decode(str); err != nil {
+	*s = ""
+	if err := dec.Decode(s); err != nil {
 		r.panic(err)
 	}
 }
@@ -567,25 +572,43 @@ func (r *Reader) CompressedBiomeDefinitions(x *map[string]any) {
 	}
 }
 
-// func (r *Reader) Bitset(x *Bitset, size int) {
-// 	*x = NewBitset(size)
-// 	for i := 0; i < size; i += 7 {
-// 		b, err := r.r.ReadByte()
-// 		if err != nil {
-// 			r.panic(err)
-// 		} else if i+bits.Len8(b) > size {
-// 			r.panic(errBitsetOverflow)
-// 		}
+// Bitset reads a Java standard bitset that is []uint64
+// with prefixed varint64 as the length of this slice
+// into x. The encoding is little-endian.
+func (r *Reader) Bitset(x *Bitset) {
+	var bitsSliceOrigin []uint64
+	FuncSliceVarint32Length(r, &bitsSliceOrigin, r.Uint64)
 
-// 		bi := big.NewInt(int64(b & 0x7f))
-// 		x.int.Or(x.int, bi.Lsh(bi, uint(i)))
-// 		if b&0x80 == 0 {
-// 			return
-// 		}
-// 	}
+	length := len(bitsSliceOrigin)
+	bitsSlice := make([]big.Word, length)
+	for i := range length {
+		bitsSlice[i] = big.Word(bitsSliceOrigin[i])
+	}
 
-// 	r.panic(errBitsetOverflow)
-// }
+	*x = NewBitset(length * 8)
+	x.bits.SetBits(bitsSlice)
+}
+
+// FixedBitset reads a Minecraft Java fixed Bitset
+// that is []byte into x.
+// The size of []byte is giving by size, which meet
+// x.Len() = celi(size / 8).
+// The encoding is little-endian.
+func (r *Reader) FixedBitset(x *Bitset, size int) {
+	fixedSize := uint32(math.Ceil(float64(size) / 8))
+	bitsSlice := make([]byte, fixedSize)
+
+	r.Reader().Read(bitsSlice)
+	slices.Reverse(bitsSlice)
+
+	*x = NewBitset(size)
+	x.bits.SetBytes(bitsSlice)
+}
+
+// TeleportFlags reads a TeleportFlags from the reader.
+func (r *Reader) TeleportFlags(x *TeleportFlags) {
+	r.FixedBitset((*Bitset)(x), TeleportFlagBitsetSize)
+}
 
 // // SliceLimit checks if the value passed is lower than the limit passed. If
 // // not, the Reader panics.

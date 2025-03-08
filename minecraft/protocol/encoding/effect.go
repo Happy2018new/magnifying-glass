@@ -175,5 +175,5 @@ func (i *ConsumeEffectPlaySound) Name() string {
 }
 
 func (i *ConsumeEffectPlaySound) Marshal(io IO) {
-	Single(io, &i.Sound)
+	io.SoundEvent(&i.Sound)
 }

@@ -236,7 +236,7 @@ type Instrument struct {
 }
 
 func (i *Instrument) Marshal(io IO) {
-	IDOrXMarshaler(io, &i.SoundEvent)
+	IDOrXFunc(io, &i.SoundEvent, io.SoundEvent)
 	io.Float32(&i.UseDurationa)
 	io.Float32(&i.Range)
 	io.TextComponentComplex(&i.Description)
@@ -278,7 +278,7 @@ type JukeboxSong struct {
 }
 
 func (j *JukeboxSong) Marshal(io IO) {
-	IDOrXMarshaler(io, &j.SoundEvent)
+	IDOrXFunc(io, &j.SoundEvent, io.SoundEvent)
 	io.TextComponentComplex(&j.Description)
 	io.Float32(&j.Duration)
 	io.Varint32(&j.Output)

@@ -21,6 +21,20 @@ func (pos BlockPos) Z() int32 {
 	return pos[2]
 }
 
+// GlobalBlockPos record a block pos
+// with the dimension id.
+type GlobalBlockPos struct {
+	// Dimension ..
+	Dimension Identifier
+	// Position ..
+	Position BlockPos
+}
+
+func (g *GlobalBlockPos) Marshal(io IO) {
+	io.Identifier(&g.Dimension)
+	io.Position(&g.Position)
+}
+
 // BlockStates refer to the property
 // of a Minecraft Java block.
 //

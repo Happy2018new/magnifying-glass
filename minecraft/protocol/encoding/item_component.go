@@ -705,7 +705,7 @@ func (i *ItemComponentConsumable) Name() string {
 func (i *ItemComponentConsumable) Marshal(io IO) {
 	io.Float32(&i.ConsumeSeconds)
 	io.Varint32(&i.Animation)
-	IDOrXMarshaler(io, &i.Sound)
+	IDOrXFunc(io, &i.Sound, io.SoundEvent)
 	io.Bool(&i.HasConsumeParticles)
 	FuncSliceVarint32Length(io, &i.Effects, io.ConsumeEffect)
 }
@@ -846,7 +846,7 @@ func (i *ItemComponentEquippable) Name() string {
 
 func (i *ItemComponentEquippable) Marshal(io IO) {
 	io.Varint32(&i.Slot)
-	IDOrXMarshaler(io, &i.EquipSound)
+	IDOrXFunc(io, &i.EquipSound, io.SoundEvent)
 	OptionalFunc(io, &i.Model, io.Identifier)
 	OptionalFunc(io, &i.CameraOverlay, io.Identifier)
 	OptionalMarshaler(io, &i.AllowedEntities)

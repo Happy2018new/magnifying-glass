@@ -6,14 +6,13 @@ import (
 	"io"
 	"magnifying-glass/minecraft/nbt"
 	"magnifying-glass/minecraft/protocol/encoding/basic_encoding"
-	"math/big"
+	"math"
+	"slices"
 	"unsafe"
 
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/google/uuid"
 )
-
-var varintMaxByteValue = big.NewInt(0x80)
 
 // Writer implements writing methods for data types
 // from Minecraft packets.
@@ -62,9 +61,17 @@ func (w *Writer) Bytes(x *[]byte) {
 	_, _ = w.Writer().Write(*x)
 }
 
-// ByteFloat writes a rotational float32 as a single byte to the underlying buffer.
-func (w *Writer) ByteFloat(x *float32) {
+// Angle writes a rotational float32 as a single byte to the underlying buffer.
+func (w *Writer) Angle(x *float32) {
 	_ = w.Writer().WriteByte(byte(*x / (360.0 / 256.0)))
+}
+
+// Vec4 writes an mgl32.Vec4 as 4 float32s to the underlying buffer.
+func (w *Writer) Vec4(x *mgl32.Vec4) {
+	w.Float32(&x[0])
+	w.Float32(&x[1])
+	w.Float32(&x[2])
+	w.Float32(&x[3])
 }
 
 // Vec3 writes an mgl32.Vec3 as 3 float32s to the underlying buffer.
@@ -114,19 +121,15 @@ func (w *Writer) Vec2(x *mgl32.Vec2) {
 // 	w.UBlockPos(&b)
 // }
 
-// RGB writes a color.RGBA x as 3 float32s to the underlying buffer.
+// RGB writes a color.RGBA x as a uint32 0xRRGGBB the underlying buffer.
 func (w *Writer) RGB(x *color.RGBA) {
-	red := float32(x.R) / 255
-	green := float32(x.G) / 255
-	blue := float32(x.B) / 255
-	w.Float32(&red)
-	w.Float32(&green)
-	w.Float32(&blue)
+	val := uint32(x.R)<<16 | uint32(x.G)<<8 | uint32(x.B)
+	w.Uint32(&val)
 }
 
-// RGBA writes a color.RGBA x as a uint32 to the underlying buffer.
+// RGBA writes a color.RGBA x as a uint32 0xAARRGGBB to the underlying buffer.
 func (w *Writer) RGBA(x *color.RGBA) {
-	val := uint32(x.R) | uint32(x.G)<<8 | uint32(x.B)<<16 | uint32(x.A)<<24
+	val := uint32(x.A)<<24 | uint32(x.R)<<16 | uint32(x.G)<<8 | uint32(x.B)
 	w.Uint32(&val)
 }
 
@@ -457,24 +460,43 @@ func (w *Writer) UUID(x *uuid.UUID) {
 // 	w.Bytes(&compressed)
 // }
 
-// func (w *Writer) Bitset(x *Bitset, size int) {
-// 	if x.size != size {
-// 		w.panicf("bitset size mismatch: expected %v, got %v", size, x.size)
-// 	}
-// 	u := new(big.Int)
-// 	u.Set(x.int)
+// Bitset writes Bitset as Java standard bitset that is
+// []uint64 with prefixed varint64 as its length into the
+// underlying buffer. The encoding is little-endian.
+func (w *Writer) Bitset(x *Bitset) {
+	bitsSliceOrigin := x.bits.Bits()
+	length := len(bitsSliceOrigin)
 
-// 	if len(u.Bits()) == 0 {
-// 		_ = w.w.WriteByte(0)
-// 		return
-// 	}
+	bitsSlice := make([]uint64, length)
+	for i := range length {
+		bitsSlice[i] = uint64(bitsSliceOrigin[i])
+	}
 
-// 	for u.Cmp(varintMaxByteValue) >= 0 {
-// 		_ = w.w.WriteByte(byte(u.Bits()[0]) | 0x80)
-// 		u.Rsh(u, 7)
-// 	}
-// 	_ = w.w.WriteByte(byte(u.Bits()[0]))
-// }
+	FuncSliceVarint32Length(w, &bitsSlice, w.Uint64)
+}
+
+// FixedBitset writes Minecraft Java fixed Bitset
+// as []byte without any prefixed things into the
+// underlying buffer.
+// The size of []byte is giving by size, which meet
+// len([]byte) = celi(x.Len() / 8).
+// The encoding is little-endian.
+func (w *Writer) FixedBitset(x *Bitset, size int) {
+	if x.Len() != size {
+		w.panicf("bitset size mismatch: expected %v, got %v", size, x.Len())
+	}
+	fixedSize := uint32(math.Ceil(float64(size) / 8))
+
+	bitsSlice := x.bits.FillBytes(make([]byte, fixedSize))
+	slices.Reverse(bitsSlice)
+
+	w.Writer().Write(bitsSlice)
+}
+
+// TeleportFlags writes a TeleportFlags to the writer.
+func (w *Writer) TeleportFlags(x *TeleportFlags) {
+	w.FixedBitset((*Bitset)(x), TeleportFlagBitsetSize)
+}
 
 // NBT writes a map as NBT to the underlying buffer using the encoding passed.
 func (w *Writer) NBT(x *map[string]any, encoding nbt.Encoding) {

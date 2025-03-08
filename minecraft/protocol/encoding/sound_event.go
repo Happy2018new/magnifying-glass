@@ -10,8 +10,3 @@ type SoundEvent struct {
 	// this is a variable volume based on distance.
 	FixedRange Optional[float32]
 }
-
-func (s *SoundEvent) Marshal(io IO) {
-	io.Identifier(&s.SoundName)
-	OptionalFunc(io, &s.FixedRange, io.Float32)
-}

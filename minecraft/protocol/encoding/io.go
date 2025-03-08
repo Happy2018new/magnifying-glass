@@ -1,8 +1,10 @@
 package encoding
 
 import (
+	"image/color"
 	"magnifying-glass/minecraft/nbt"
 
+	"github.com/go-gl/mathgl/mgl32"
 	"github.com/google/uuid"
 )
 
@@ -39,19 +41,28 @@ type IO interface {
 	Identifier(x *Identifier)
 	Varint32(x *int32)
 	Varint64(x *int64)
+	EntityMetadata(x *EntityMetadata)
+	ItemStack(x *ItemStack)
+	Position(x *BlockPos)
+	Angle(x *float32)
+	UUID(x *uuid.UUID)
+	Bitset(x *Bitset)
+	FixedBitset(x *Bitset, size int)
+	SoundEvent(x *SoundEvent)
+	TeleportFlags(x *TeleportFlags)
 
 	NBT(m *map[string]any, encoding nbt.Encoding)
 	NBTList(m *[]any, encoding nbt.Encoding)
-	NBTString(x *string, encoding nbt.Encoding)
+	NBTString(s *string, encoding nbt.Encoding)
 
 	ConsumeEffect(x *ConsumeEffect) // new
-	Position(x *BlockPos)           // new
 	ItemComponent(x *ItemComponent) // new
-	ItemStack(x *ItemStack)         // new
+	Particle(x *Particle)           // new
 
 	// StringUTF(x *string)
 	// ByteSlice(x *[]byte)
-	// Vec3(x *mgl32.Vec3)
+	Vec3(x *mgl32.Vec3)
+	Vec4(x *mgl32.Vec4)
 	// Vec2(x *mgl32.Vec2)
 	// BlockPos(x *BlockPos)
 	// UBlockPos(x *BlockPos)
@@ -60,9 +71,8 @@ type IO interface {
 	// SoundPos(x *mgl32.Vec3)
 	// ByteFloat(x *float32)
 	// Bytes(p *[]byte)
-	UUID(x *uuid.UUID)
-	// RGB(x *color.RGBA)
-	// RGBA(x *color.RGBA)
+	RGB(x *color.RGBA)
+	RGBA(x *color.RGBA)
 	// VarRGBA(x *color.RGBA)
 	// EntityMetadata(x *map[uint32]any)
 	// Item(x *ItemStack)
@@ -291,6 +301,14 @@ type IDOrX[T any] struct {
 	ID int32
 	// Only present if ID is 0.
 	Value T
+}
+
+// IDOrXFunc reads/writes an Optional[T].
+func IDOrXFunc[T any](r IO, x *IDOrX[T], f func(*T)) {
+	r.Varint32(&x.ID)
+	if x.ID == 0 {
+		f(&x.Value)
+	}
 }
 
 // IDOrXMarshaler reads/writes an Optional assuming *T implements Marshaler.
