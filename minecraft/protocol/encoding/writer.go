@@ -7,7 +7,9 @@ import (
 	"magnifying-glass/minecraft/nbt"
 	"magnifying-glass/minecraft/protocol/encoding/basic_encoding"
 	"math"
+	"reflect"
 	"slices"
+	"sort"
 	"unsafe"
 
 	"github.com/go-gl/mathgl/mgl32"
@@ -49,16 +51,207 @@ func (w *Writer) String(x *string) {
 	_, _ = w.Writer().Write([]byte(*x))
 }
 
-// ByteSlice writes a []byte, prefixed with a varuint32, to the underlying buffer.
-func (w *Writer) ByteSlice(x *[]byte) {
-	l := uint32(len(*x))
-	w.Varuint32(&l)
-	_, _ = w.Writer().Write(*x)
+// TextComponentString writes a TextComponentString to the writer.
+func (w *Writer) TextComponentString(x *TextComponentString) {
+	w.String((*string)(x))
 }
 
-// Bytes appends a []byte to the underlying buffer.
-func (w *Writer) Bytes(x *[]byte) {
-	_, _ = w.Writer().Write(*x)
+// TextComponentComplex writes a TextComponentComplex to the writer.
+func (w *Writer) TextComponentComplex(x *TextComponentComplex) {
+	w.NBT((*map[string]any)(x), nbt.NetworkBigEndian)
+}
+
+// TextComponentComplexOptional writes a TextComponentComplexOptional to the writer.
+func (w *Writer) TextComponentComplexOptional(x *TextComponentComplexOptional) {
+	w.Bool(&x.Existed)
+	if x.Existed {
+		w.NBT(&x.Data, nbt.NetworkBigEndian)
+	}
+}
+
+// JsonTextComponent writes a JsonTextComponent to the writer.
+func (w *Writer) JsonTextComponent(x *JsonTextComponent) {
+	w.NBTString((*string)(x), nbt.NetworkBigEndian)
+}
+
+// Identifier writes an Identifier to the writer.
+func (w *Writer) Identifier(x *Identifier) {
+	w.String((*string)(x))
+}
+
+// WriteEntityMetadata writes an entity metadata
+// map x to the underlying buffer.
+func (w *Writer) EntityMetadata(x *EntityMetadata) {
+	l := uint32(len(*x))
+
+	// I don't know if it is necessary to do the key
+	// sorting on Java edition of Minecraft.
+	// Howerver, let me do the same things to make
+	// everything is sorted.
+	keys := make([]int, 0, l)
+	for k := range *x {
+		keys = append(keys, int(k))
+	}
+	sort.Ints(keys)
+
+	for _, k := range keys {
+		index := uint8(k)
+		value := (*x)[index]
+		w.Uint8(&index)
+		switch v := value.(type) {
+		case byte:
+			entityDataTypeByte := EntityDataTypeByte
+			w.Varint32(&entityDataTypeByte)
+			w.Uint8(&v)
+		case int32:
+			entityDataTypeVarint32 := EntityDataTypeVarint32
+			w.Varint32(&entityDataTypeVarint32)
+			w.Varint32(&v)
+		case int64:
+			entityDataTypeVarint64 := EntityDataTypeVarint64
+			w.Varint32(&entityDataTypeVarint64)
+			w.Varint64(&v)
+		case float32:
+			entityDataTypeFloat32 := EntityDataTypeFloat32
+			w.Varint32(&entityDataTypeFloat32)
+			w.Float32(&v)
+		case string:
+			entityDataTypeString := EntityDataTypeString
+			w.Varint32(&entityDataTypeString)
+			w.String(&v)
+		case TextComponentComplex:
+			entityDataTypeTextCompound := EntityDataTypeTextCompound
+			w.Varint32(&entityDataTypeTextCompound)
+			w.TextComponentComplex(&v)
+		case TextComponentComplexOptional:
+			entityDataTypeOptionalTextCompound := EntityDataTypeOptionalTextCompound
+			w.Varint32(&entityDataTypeOptionalTextCompound)
+			w.TextComponentComplexOptional(&v)
+		case ItemStack:
+			entityDataTypeItemStack := EntityDataTypeItemStack
+			w.Varint32(&entityDataTypeItemStack)
+			w.ItemStack(&v)
+		case bool:
+			entityDataTypeBoolean := EntityDataTypeBoolean
+			w.Varint32(&entityDataTypeBoolean)
+			w.Bool(&v)
+		case EntityDataRotations:
+			entityDataTypeRotations := EntityDataTypeRotations
+			w.Varint32(&entityDataTypeRotations)
+			v.Marshal(w)
+		case BlockPos:
+			entityDataTypePosition := EntityDataTypePosition
+			w.Varint32(&entityDataTypePosition)
+			w.Position(&v)
+		case EntityDataOptionalPosition:
+			entityDataTypeOptionalPosition := EntityDataTypeOptionalPosition
+			w.Varint32(&entityDataTypeOptionalPosition)
+			v.Marshal(w)
+		case EntityDataDirection:
+			entityDataTypeDirection := EntityDataTypeDirection
+			w.Varint32(&entityDataTypeDirection)
+			v.Marshal(w)
+		case EntityDataOptionalUUID:
+			entityDataTypeOptionalUUID := EntityDataTypeOptionalUUID
+			w.Varint32(&entityDataTypeOptionalUUID)
+			v.Marshal(w)
+		case EntityDataBlockState:
+			entityDataTypeBlockState := EntityDataTypeBlockState
+			w.Varint32(&entityDataTypeBlockState)
+			v.Marshal(w)
+		case EntityDataOptionalBlockState:
+			entityDataTypeOptionalBlockState := EntityDataTypeOptionalBlockState
+			w.Varint32(&entityDataTypeOptionalBlockState)
+			v.Marshal(w)
+		case map[string]any:
+			entityDataTypeTagNBT := EntityDataTypeTagNBT
+			w.Varint32(&entityDataTypeTagNBT)
+			w.NBT(&v, nbt.NetworkBigEndian)
+		case Particle:
+			entityDataTypeParticle := EntityDataTypeParticle
+			w.Varint32(&entityDataTypeParticle)
+			w.Particle(&v)
+		case []Particle:
+			entityDataTypeParticles := EntityDataTypeParticles
+			w.Varint32(&entityDataTypeParticles)
+			FuncSliceVarint32Length(w, &v, w.Particle)
+		case EntityDataVillagerData:
+			entityDataTypeVillagerData := EntityDataTypeVillagerData
+			w.Varint32(&entityDataTypeVillagerData)
+			v.Marshal(w)
+		case EntityDataOptionalVarint32:
+			entityDataTypeOptionalVarint32 := EntityDataTypeOptionalVarint32
+			w.Varint32(&entityDataTypeOptionalVarint32)
+			v.Marshal(w)
+		case EntityDataPose:
+			entityDataTypePose := EntityDataTypePose
+			w.Varint32(&entityDataTypePose)
+			v.Marshal(w)
+		case EntityDataCatVariant:
+			entityDataTypeCatVariant := EntityDataTypeCatVariant
+			w.Varint32(&entityDataTypeCatVariant)
+			v.Marshal(w)
+		case EntityDataWolfVariant:
+			entityDataTypeWolfVariant := EntityDataTypeWolfVariant
+			w.Varint32(&entityDataTypeWolfVariant)
+			v.Marshal(w)
+		case EntityDataForgVariant:
+			entityDataTypeFrogVariant := EntityDataTypeFrogVariant
+			w.Varint32(&entityDataTypeFrogVariant)
+			v.Marshal(w)
+		case EntityDataOptionalGlobalPosition:
+			entityDataTypeOptionalGlobalPosition := EntityDataTypeOptionalGlobalPosition
+			w.Varint32(&entityDataTypeOptionalGlobalPosition)
+			v.Marshal(w)
+		case EntityDataPaintingVariant:
+			entityDataTypePaintingVariant := EntityDataTypePaintingVariant
+			w.Varint32(&entityDataTypePaintingVariant)
+			v.Marshal(w)
+		case EntityDataSnifferState:
+			entityDataTypeSnifferState := EntityDataTypeSnifferState
+			w.Varint32(&entityDataTypeSnifferState)
+			v.Marshal(w)
+		case EntityDataArmadilloState:
+			entityDataTypeArmadilloState := EntityDataTypeArmadilloState
+			w.Varint32(&entityDataTypeArmadilloState)
+			v.Marshal(w)
+		case mgl32.Vec3:
+			entityDataTypeVec3 := EntityDataTypeVec3
+			w.Varint32(&entityDataTypeVec3)
+			w.Vec3(&v)
+		case mgl32.Vec4:
+			entityDataTypeQuaternion := EntityDataTypeQuaternion
+			w.Varint32(&entityDataTypeQuaternion)
+			w.Vec4(&v)
+		default:
+			w.UnknownEnumOption(reflect.TypeOf(value), "entity metadata")
+		}
+	}
+
+	entityMetadataTagEnd := EntityMetadataTagEnd
+	w.Uint8(&entityMetadataTagEnd)
+}
+
+// ItemStack writes an ItemStack to the writer.
+func (w *Writer) ItemStack(x *ItemStack) {
+	w.Varint32(&x.ItemCount)
+	if x.ItemCount == 0 {
+		return
+	}
+	w.Varint32(&x.ItemID)
+	w.Varint32(&x.AddComponentsCount)
+	w.Varint32(&x.RemoveComponentsCount)
+	FuncSliceOfLen(w, uint32(x.AddComponentsCount), &x.ComponentsToAdd, w.ItemComponent)
+	FuncSliceOfLen(w, uint32(x.RemoveComponentsCount), &x.ComponentsToRemove, w.Varint32)
+}
+
+// Position writes BlockPos as a int64 to the writer.
+func (w *Writer) Position(x *BlockPos) {
+	partX := (uint64(x[0]) & 0x3FFFFF) << 38
+	partZ := (uint64(x[2]) & 0x3FFFFF) << 12
+	partY := uint64(x[1]) & 0xFFF
+	val := partX | partZ | partY
+	w.Uint64(&val)
 }
 
 // Angle writes a rotational float32 as a single byte to the underlying buffer.
@@ -66,399 +259,11 @@ func (w *Writer) Angle(x *float32) {
 	_ = w.Writer().WriteByte(byte(*x / (360.0 / 256.0)))
 }
 
-// Vec4 writes an mgl32.Vec4 as 4 float32s to the underlying buffer.
-func (w *Writer) Vec4(x *mgl32.Vec4) {
-	w.Float32(&x[0])
-	w.Float32(&x[1])
-	w.Float32(&x[2])
-	w.Float32(&x[3])
-}
-
-// Vec3 writes an mgl32.Vec3 as 3 float32s to the underlying buffer.
-func (w *Writer) Vec3(x *mgl32.Vec3) {
-	w.Float32(&x[0])
-	w.Float32(&x[1])
-	w.Float32(&x[2])
-}
-
-// Vec2 writes an mgl32.Vec2 as 2 float32s to the underlying buffer.
-func (w *Writer) Vec2(x *mgl32.Vec2) {
-	w.Float32(&x[0])
-	w.Float32(&x[1])
-}
-
-// // BlockPos writes a BlockPos as 3 varint32s to the underlying buffer.
-// func (w *Writer) BlockPos(x *BlockPos) {
-// 	w.Varint32(&x[0])
-// 	w.Varint32(&x[1])
-// 	w.Varint32(&x[2])
-// }
-
-// // UBlockPos writes a BlockPos as 2 varint32s and a varuint32 to the underlying buffer.
-// func (w *Writer) UBlockPos(x *BlockPos) {
-// 	w.Varint32(&x[0])
-// 	y := uint32(x[1])
-// 	w.Varuint32(&y)
-// 	w.Varint32(&x[2])
-// }
-
-// // ChunkPos writes a ChunkPos as 2 varint32s to the underlying buffer.
-// func (w *Writer) ChunkPos(x *ChunkPos) {
-// 	w.Varint32(&x[0])
-// 	w.Varint32(&x[1])
-// }
-
-// // SubChunkPos writes a SubChunkPos as 3 varint32s to the underlying buffer.
-// func (w *Writer) SubChunkPos(x *SubChunkPos) {
-// 	w.Varint32(&x[0])
-// 	w.Varint32(&x[1])
-// 	w.Varint32(&x[2])
-// }
-
-// // SoundPos writes an mgl32.Vec3 that serves as a position for a sound.
-// func (w *Writer) SoundPos(x *mgl32.Vec3) {
-// 	b := BlockPos{int32((*x)[0] * 8), int32((*x)[1] * 8), int32((*x)[2] * 8)}
-// 	w.UBlockPos(&b)
-// }
-
-// RGB writes a color.RGBA x as a uint32 0xRRGGBB the underlying buffer.
-func (w *Writer) RGB(x *color.RGBA) {
-	val := uint32(x.R)<<16 | uint32(x.G)<<8 | uint32(x.B)
-	w.Uint32(&val)
-}
-
-// RGBA writes a color.RGBA x as a uint32 0xAARRGGBB to the underlying buffer.
-func (w *Writer) RGBA(x *color.RGBA) {
-	val := uint32(x.A)<<24 | uint32(x.R)<<16 | uint32(x.G)<<8 | uint32(x.B)
-	w.Uint32(&val)
-}
-
-// VarRGBA writes a color.RGBA x as a varuint32 to the underlying buffer.
-func (w *Writer) VarRGBA(x *color.RGBA) {
-	val := uint32(x.R) | uint32(x.G)<<8 | uint32(x.B)<<16 | uint32(x.A)<<24
-	w.Varuint32(&val)
-}
-
 // UUID writes a UUID to the underlying buffer.
 func (w *Writer) UUID(x *uuid.UUID) {
 	b := [16]byte(*x)
 	_, _ = w.Writer().Write(b[:])
 }
-
-// // PlayerInventoryAction writes a PlayerInventoryAction.
-// func (w *Writer) PlayerInventoryAction(x *UseItemTransactionData) {
-// 	w.Varint32(&x.LegacyRequestID)
-// 	if x.LegacyRequestID < -1 && (x.LegacyRequestID&1) == 0 {
-// 		Slice(w, &x.LegacySetItemSlots)
-// 	}
-// 	Slice(w, &x.Actions)
-// 	w.Varuint32(&x.ActionType)
-// 	w.Varuint32(&x.TriggerType)
-// 	w.BlockPos(&x.BlockPosition)
-// 	w.Varint32(&x.BlockFace)
-// 	w.Varint32(&x.HotBarSlot)
-// 	w.ItemInstance(&x.HeldItem)
-// 	w.Vec3(&x.Position)
-// 	w.Vec3(&x.ClickedPosition)
-// 	w.Varuint32(&x.BlockRuntimeID)
-// 	w.Varuint32(&x.ClientPrediction)
-// }
-
-// // GameRule writes a GameRule x to the Writer.
-// func (w *Writer) GameRule(x *GameRule) {
-// 	w.String(&x.Name)
-// 	w.Bool(&x.CanBeModifiedByPlayer)
-
-// 	switch v := x.Value.(type) {
-// 	case bool:
-// 		id := uint32(1)
-// 		w.Varuint32(&id)
-// 		w.Bool(&v)
-// 	case uint32:
-// 		id := uint32(2)
-// 		w.Varuint32(&id)
-// 		w.Varuint32(&v)
-// 	case float32:
-// 		id := uint32(3)
-// 		w.Varuint32(&id)
-// 		w.Float32(&v)
-// 	default:
-// 		w.UnknownEnumOption(fmt.Sprintf("%T", v), "game rule type")
-// 	}
-// }
-
-// // EntityMetadata writes an entity metadata map x to the underlying buffer.
-// func (w *Writer) EntityMetadata(x *map[uint32]any) {
-// 	l := uint32(len(*x))
-// 	w.Varuint32(&l)
-
-// 	// Entity metadata needs to be sorted for some functionality to work. NPCs, for example, need to have their fields
-// 	// set in increasing order, or the text or buttons won't be shown to the client. See #88.
-// 	// Sorting this is probably not very fast, but it'll have to do for now: We can change entity metadata to a slice
-// 	// later on.
-// 	keys := make([]int, 0, l)
-// 	for k := range *x {
-// 		keys = append(keys, int(k))
-// 	}
-// 	sort.Ints(keys)
-// 	for _, k := range keys {
-// 		key := uint32(k)
-// 		value := (*x)[uint32(k)]
-// 		w.Varuint32(&key)
-// 		switch v := value.(type) {
-// 		case byte:
-// 			entityDataTypeByte := EntityDataTypeByte
-// 			w.Varuint32(&entityDataTypeByte)
-// 			w.Uint8(&v)
-// 		case int16:
-// 			entityDataTypeInt16 := EntityDataTypeInt16
-// 			w.Varuint32(&entityDataTypeInt16)
-// 			w.Int16(&v)
-// 		case int32:
-// 			entityDataTypeInt32 := EntityDataTypeInt32
-// 			w.Varuint32(&entityDataTypeInt32)
-// 			w.Varint32(&v)
-// 		case float32:
-// 			entityDataTypeFloat32 := EntityDataTypeFloat32
-// 			w.Varuint32(&entityDataTypeFloat32)
-// 			w.Float32(&v)
-// 		case string:
-// 			entityDataTypeString := EntityDataTypeString
-// 			w.Varuint32(&entityDataTypeString)
-// 			w.String(&v)
-// 		case map[string]any:
-// 			entityDataTypeCompoundTag := EntityDataTypeCompoundTag
-// 			w.Varuint32(&entityDataTypeCompoundTag)
-// 			w.NBT(&v, nbt.NetworkLittleEndian)
-// 		case BlockPos:
-// 			entityDataTypeBlockPos := EntityDataTypeBlockPos
-// 			w.Varuint32(&entityDataTypeBlockPos)
-// 			w.BlockPos(&v)
-// 		case int64:
-// 			entityDataTypeInt64 := EntityDataTypeInt64
-// 			w.Varuint32(&entityDataTypeInt64)
-// 			w.Varint64(&v)
-// 		case mgl32.Vec3:
-// 			entityDataTypeVec3 := EntityDataTypeVec3
-// 			w.Varuint32(&entityDataTypeVec3)
-// 			w.Vec3(&v)
-// 		default:
-// 			w.UnknownEnumOption(reflect.TypeOf(value), "entity metadata")
-// 		}
-// 	}
-// }
-
-// // ItemDescriptorCount writes an ItemDescriptorCount i to the underlying buffer.
-// func (w *Writer) ItemDescriptorCount(i *ItemDescriptorCount) {
-// 	var id byte
-// 	switch i.Descriptor.(type) {
-// 	case *InvalidItemDescriptor:
-// 		id = ItemDescriptorInvalid
-// 	case *DefaultItemDescriptor:
-// 		id = ItemDescriptorDefault
-// 	case *MoLangItemDescriptor:
-// 		id = ItemDescriptorMoLang
-// 	case *ItemTagItemDescriptor:
-// 		id = ItemDescriptorItemTag
-// 	case *DeferredItemDescriptor:
-// 		id = ItemDescriptorDeferred
-// 	case *ComplexAliasItemDescriptor:
-// 		id = ItemDescriptorComplexAlias
-// 	default:
-// 		w.UnknownEnumOption(fmt.Sprintf("%T", i.Descriptor), "item descriptor type")
-// 		return
-// 	}
-// 	w.Uint8(&id)
-
-// 	i.Descriptor.Marshal(w)
-// 	w.Varint32(&i.Count)
-// }
-
-// // ItemInstance writes an ItemInstance i to the underlying buffer.
-// func (w *Writer) ItemInstance(i *ItemInstance) {
-// 	x := &i.Stack
-// 	w.Varint32(&x.NetworkID)
-// 	if x.NetworkID == 0 {
-// 		// The item was air, so there's no more data to follow. Return immediately.
-// 		return
-// 	}
-
-// 	w.Uint16(&x.Count)
-// 	w.Varuint32(&x.MetadataValue)
-
-// 	hasNetID := i.StackNetworkID != 0
-// 	w.Bool(&hasNetID)
-
-// 	if hasNetID {
-// 		w.Varint32(&i.StackNetworkID)
-// 	}
-
-// 	w.Varint32(&x.BlockRuntimeID)
-
-// 	buf := new(bytes.Buffer)
-// 	bufWriter := NewWriter(buf, w.shieldID)
-
-// 	var length int16
-// 	if len(x.NBTData) != 0 {
-// 		length = int16(-1)
-// 		version := uint8(1)
-
-// 		bufWriter.Int16(&length)
-// 		bufWriter.Uint8(&version)
-// 		bufWriter.NBT(&x.NBTData, nbt.LittleEndian)
-// 	} else {
-// 		bufWriter.Int16(&length)
-// 	}
-
-// 	FuncSliceUint32Length(bufWriter, &x.CanBePlacedOn, bufWriter.StringUTF)
-// 	FuncSliceUint32Length(bufWriter, &x.CanBreak, bufWriter.StringUTF)
-
-// 	if x.NetworkID == bufWriter.shieldID {
-// 		var blockingTick int64
-// 		bufWriter.Int64(&blockingTick)
-// 	}
-
-// 	b := buf.Bytes()
-// 	w.ByteSlice(&b)
-// }
-
-// // Item writes an ItemStack x to the underlying buffer.
-// func (w *Writer) Item(x *ItemStack) {
-// 	w.Varint32(&x.NetworkID)
-// 	if x.NetworkID == 0 {
-// 		// The item was air, so there's no more data to follow. Return immediately.
-// 		return
-// 	}
-
-// 	w.Uint16(&x.Count)
-// 	w.Varuint32(&x.MetadataValue)
-// 	w.Varint32(&x.BlockRuntimeID)
-
-// 	var extraData []byte
-// 	buf := bytes.NewBuffer(extraData)
-// 	bufWriter := NewWriter(buf, w.shieldID)
-
-// 	var length int16
-// 	if len(x.NBTData) != 0 {
-// 		length = int16(-1)
-// 		version := uint8(1)
-
-// 		bufWriter.Int16(&length)
-// 		bufWriter.Uint8(&version)
-// 		bufWriter.NBT(&x.NBTData, nbt.LittleEndian)
-// 	} else {
-// 		bufWriter.Int16(&length)
-// 	}
-
-// 	FuncSliceUint32Length(bufWriter, &x.CanBePlacedOn, bufWriter.StringUTF)
-// 	FuncSliceUint32Length(bufWriter, &x.CanBreak, bufWriter.StringUTF)
-
-// 	if x.NetworkID == bufWriter.shieldID {
-// 		var blockingTick int64
-// 		bufWriter.Int64(&blockingTick)
-// 	}
-
-// 	extraData = buf.Bytes()
-// 	w.ByteSlice(&extraData)
-// }
-
-// // StackRequestAction writes a StackRequestAction to the writer.
-// func (w *Writer) StackRequestAction(x *StackRequestAction) {
-// 	var id byte
-// 	if !lookupStackRequestActionType(*x, &id) {
-// 		w.UnknownEnumOption(fmt.Sprintf("%T", *x), "stack request action type")
-// 	}
-// 	w.Uint8(&id)
-// 	(*x).Marshal(w)
-// }
-
-// // MaterialReducer writes a material reducer to the writer.
-// func (w *Writer) MaterialReducer(m *MaterialReducer) {
-// 	mix := (m.InputItem.NetworkID << 16) | int32(m.InputItem.MetadataValue)
-// 	w.Varint32(&mix)
-// 	Slice(w, &m.Outputs)
-// }
-
-// // Recipe writes a Recipe to the writer.
-// func (w *Writer) Recipe(x *Recipe) {
-// 	var recipeType int32
-// 	if !lookupRecipeType(*x, &recipeType) {
-// 		w.UnknownEnumOption(fmt.Sprintf("%T", *x), "crafting recipe type")
-// 	}
-// 	w.Varint32(&recipeType)
-// 	(*x).Marshal(w)
-// }
-
-// // EventType writes an Event to the writer.
-// func (w *Writer) EventType(x *Event) {
-// 	var t int32
-// 	if !lookupEventType(*x, &t) {
-// 		w.UnknownEnumOption(fmt.Sprintf("%T", x), "event packet event type")
-// 	}
-// 	w.Varint32(&t)
-// }
-
-// // TransactionDataType writes an InventoryTransactionData type to the writer.
-// func (w *Writer) TransactionDataType(x *InventoryTransactionData) {
-// 	var id uint32
-// 	if !lookupTransactionDataType(*x, &id) {
-// 		w.UnknownEnumOption(fmt.Sprintf("%T", x), "inventory transaction data type")
-// 	}
-// 	w.Varuint32(&id)
-// }
-
-// // AbilityValue writes an ability value to the writer.
-// func (w *Writer) AbilityValue(x *any) {
-// 	switch val := (*x).(type) {
-// 	case bool:
-// 		valType, defaultVal := uint8(1), float32(0)
-// 		w.Uint8(&valType)
-// 		w.Bool(&val)
-// 		w.Float32(&defaultVal)
-// 	case float32:
-// 		valType, defaultVal := uint8(2), false
-// 		w.Uint8(&valType)
-// 		w.Bool(&defaultVal)
-// 		w.Float32(&val)
-// 	default:
-// 		w.InvalidValue(*x, "ability value type", "must be bool or float32")
-// 	}
-// }
-
-// // CompressedBiomeDefinitions reads a list of compressed biome definitions from the reader. Minecraft decided to make their
-// // own type of compression for this, so we have to implement it ourselves. It uses a dictionary of repeated byte sequences
-// // to reduce the size of the data. The compressed data is read byte-by-byte, and if the byte is 0xff then it is assumed
-// // that the next two bytes are an int16 for the dictionary index. Otherwise, the byte is copied to the output. The dictionary
-// // index is then used to look up the byte sequence to be appended to the output.
-// func (w *Writer) CompressedBiomeDefinitions(x *map[string]any) {
-// 	decompressed, err := nbt.Marshal(x)
-// 	if err != nil {
-// 		w.panicf("error marshaling nbt: %v", err)
-// 	}
-
-// 	var compressed []byte
-// 	buf := bytes.NewBuffer(compressed)
-// 	bufWriter := NewWriter(buf, w.shieldID)
-
-// 	header := []byte("COMPRESSED")
-// 	bufWriter.Bytes(&header)
-
-// 	// TODO: Dictionary compression implementation
-// 	var dictionaryLength uint16
-// 	bufWriter.Uint16(&dictionaryLength)
-// 	for _, b := range decompressed {
-// 		bufWriter.Uint8(&b)
-// 		if b == 0xff {
-// 			dictionaryIndex := int16(1)
-// 			bufWriter.Int16(&dictionaryIndex)
-// 		}
-// 	}
-
-// 	compressed = buf.Bytes()
-// 	length := uint32(len(compressed))
-// 	w.Varuint32(&length)
-// 	w.Bytes(&compressed)
-// }
 
 // Bitset writes Bitset as Java standard bitset that is
 // []uint64 with prefixed varint64 as its length into the
@@ -493,9 +298,52 @@ func (w *Writer) FixedBitset(x *Bitset, size int) {
 	w.Writer().Write(bitsSlice)
 }
 
+// SoundEvent writes a SoundEvent to the writer.
+func (w *Writer) SoundEvent(x *SoundEvent) {
+	w.Identifier(&x.SoundName)
+	OptionalFunc(w, &x.FixedRange, w.Float32)
+}
+
 // TeleportFlags writes a TeleportFlags to the writer.
 func (w *Writer) TeleportFlags(x *TeleportFlags) {
 	w.FixedBitset((*Bitset)(x), TeleportFlagBitsetSize)
+}
+
+// RecipeDisplay writes a RecipeDisplay to the writer.
+func (w *Writer) RecipeDisplay(x *RecipeDisplay) {
+	var t int32
+	if !lookupRecipeDisplayType(*x, &t) {
+		w.UnknownEnumOption(fmt.Sprintf("%T", x), "recipe display type")
+	}
+	w.Varint32(&t)
+	(*x).Marshal(w)
+}
+
+// SlotDisplay writes a SlotDisplay to the writer.
+func (w *Writer) SlotDisplay(x *SlotDisplay) {
+	var t int32
+	if !lookupSlotDisplayType(*x, &t) {
+		w.UnknownEnumOption(fmt.Sprintf("%T", x), "slot display type")
+	}
+	w.Varint32(&t)
+	(*x).Marshal(w)
+}
+
+// ChunkData writes a ChunkData to the writer.
+func (w *Writer) ChunkData(x *ChunkData) {
+	w.NBT(&x.Heightmaps, nbt.NetworkBigEndian)
+	FuncSliceVarint32Length(w, &x.Data, w.Uint8)
+	SliceVarint32Length(w, &x.BlockEntities)
+}
+
+// LightData writes a LightData to the writer.
+func (w *Writer) LightData(x *LightData) {
+	w.Bitset(&x.SkyLightMask)
+	w.Bitset(&x.BlockLightMask)
+	w.Bitset(&x.EmptySkyLightMask)
+	w.Bitset(&x.EmptyBlockLightMask)
+	FuncSliceVarint32Length(w, &x.SkyLightArrays, w.Uint8)
+	FuncSliceVarint32Length(w, &x.BlockLightArrays, w.Uint8)
 }
 
 // NBT writes a map as NBT to the underlying buffer using the encoding passed.
@@ -519,10 +367,67 @@ func (w *Writer) NBTString(x *string, encoding nbt.Encoding) {
 	}
 }
 
-// // ShieldID returns the shield ID provided to the writer.
-// func (w *Writer) ShieldID() int32 {
-// 	return w.shieldID
-// }
+// ConsumeEffect writes an ConsumeEffect to the writer.
+func (w *Writer) ConsumeEffect(x *ConsumeEffect) {
+	var id int32
+	if !lookupConsumeEffectType(*x, &id) {
+		w.UnknownEnumOption(fmt.Sprintf("%T", x), "consume effect type")
+	}
+	w.Varint32(&id)
+	(*x).Marshal(w)
+}
+
+// ItemComponent writes an ItemComponent to the writer.
+func (w *Writer) ItemComponent(x *ItemComponent) {
+	var t int32
+	if !lookupItemComponentType(*x, &t) {
+		w.UnknownEnumOption(fmt.Sprintf("%T", x), "item component type")
+	}
+	w.Varint32(&t)
+	(*x).Marshal(w)
+}
+
+// Particle writes a Particle to the writer.
+func (w *Writer) Particle(x *Particle) {
+	var t int32
+	if !lookupParticleType(*x, &t) {
+		w.UnknownEnumOption(fmt.Sprintf("%T", x), "particle type")
+	}
+	w.Varint32(&t)
+	(*x).Marshal(w)
+}
+
+// Vec4 writes an mgl32.Vec4 as 4 float32s to the underlying buffer.
+func (w *Writer) Vec4(x *mgl32.Vec4) {
+	w.Float32(&x[0])
+	w.Float32(&x[1])
+	w.Float32(&x[2])
+	w.Float32(&x[3])
+}
+
+// Vec3 writes an mgl32.Vec3 as 3 float32s to the underlying buffer.
+func (w *Writer) Vec3(x *mgl32.Vec3) {
+	w.Float32(&x[0])
+	w.Float32(&x[1])
+	w.Float32(&x[2])
+}
+
+// RGB writes a color.RGBA x as a uint32 0xRRGGBB the underlying buffer.
+func (w *Writer) RGB(x *color.RGBA) {
+	val := uint32(x.R)<<16 | uint32(x.G)<<8 | uint32(x.B)
+	w.Uint32(&val)
+}
+
+// RGBA writes a color.RGBA x as a uint32 0xAARRGGBB to the underlying buffer.
+func (w *Writer) RGBA(x *color.RGBA) {
+	val := uint32(x.A)<<24 | uint32(x.R)<<16 | uint32(x.G)<<8 | uint32(x.B)
+	w.Uint32(&val)
+}
+
+// Bytes appends a []byte to the underlying buffer.
+func (w *Writer) Bytes(x *[]byte) {
+	_, _ = w.Writer().Write(*x)
+}
 
 // UnknownEnumOption panics with an unknown enum option error.
 func (w *Writer) UnknownEnumOption(value any, enum string) {

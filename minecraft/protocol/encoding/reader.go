@@ -1,8 +1,6 @@
 package encoding
 
 import (
-	"bytes"
-	"errors"
 	"fmt"
 	"image/color"
 	"io"
@@ -16,9 +14,6 @@ import (
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/google/uuid"
 )
-
-// errStringTooLong is an error set if a string decoded using the String method has a length that is too long.
-var errStringTooLong = errors.New("string length overflows a 32-bit integer")
 
 // Reader implements reading operations for
 // reading types from Minecraft packets.
@@ -64,157 +59,207 @@ func (r *Reader) String(x *string) {
 	*x = *(*string)(unsafe.Pointer(&data))
 }
 
-// ByteSlice reads a byte slice from the underlying buffer, similarly to String.
-func (r *Reader) ByteSlice(x *[]byte) {
-	var length uint32
-	r.Varuint32(&length)
-	l := int(length)
-	if l > math.MaxInt32 {
-		r.panic(errStringTooLong)
+// TextComponentString reads a TextComponentString from the reader.
+func (r *Reader) TextComponentString(x *TextComponentString) {
+	r.String((*string)(x))
+}
+
+// TextComponentComplex reads a TextComponentComplex from the reader.
+func (r *Reader) TextComponentComplex(x *TextComponentComplex) {
+	r.NBT((*map[string]any)(x), nbt.NetworkBigEndian)
+}
+
+// TextComponentComplexOptional reads a TextComponentComplexOptional from the reader.
+func (r *Reader) TextComponentComplexOptional(x *TextComponentComplexOptional) {
+	r.Bool(&x.Existed)
+	if x.Existed {
+		r.NBT(&x.Data, nbt.NetworkBigEndian)
 	}
-	data := make([]byte, l)
-	if _, err := r.Reader().Read(data); err != nil {
-		r.panic(err)
+}
+
+// JsonTextComponent reads a JsonTextComponent from the reader.
+func (r *Reader) JsonTextComponent(x *JsonTextComponent) {
+	r.NBTString((*string)(x), nbt.NetworkBigEndian)
+}
+
+// Identifier reads an Identifier from the reader.
+func (r *Reader) Identifier(x *Identifier) {
+	r.String((*string)(x))
+}
+
+// EntityMetadata reads an entity metadata map
+// from the underlying buffer into map x.
+func (r *Reader) EntityMetadata(x *EntityMetadata) {
+	*x = make(EntityMetadata)
+
+	for {
+		var index uint8
+		var dataType int32
+
+		r.Uint8(&index)
+		if index == EntityMetadataTagEnd {
+			break
+		}
+
+		r.Varint32(&dataType)
+		switch dataType {
+		case EntityDataTypeByte:
+			var v byte
+			r.Uint8(&v)
+			(*x)[index] = v
+		case EntityDataTypeVarint32:
+			var v int32
+			r.Varint32(&v)
+			(*x)[index] = v
+		case EntityDataTypeVarint64:
+			var v int64
+			r.Varint64(&v)
+			(*x)[index] = v
+		case EntityDataTypeFloat32:
+			var v float32
+			r.Float32(&v)
+			(*x)[index] = v
+		case EntityDataTypeString:
+			var v string
+			r.String(&v)
+			(*x)[index] = v
+		case EntityDataTypeTextCompound:
+			var v TextComponentComplex
+			r.TextComponentComplex(&v)
+			(*x)[index] = v
+		case EntityDataTypeOptionalTextCompound:
+			var v TextComponentComplexOptional
+			r.TextComponentComplexOptional(&v)
+			(*x)[index] = v
+		case EntityDataTypeItemStack:
+			var v ItemStack
+			r.ItemStack(&v)
+			(*x)[index] = v
+		case EntityDataTypeBoolean:
+			var v bool
+			r.Bool(&v)
+			(*x)[index] = v
+		case EntityDataTypeRotations:
+			var v EntityDataRotations
+			v.Marshal(r)
+			(*x)[index] = v
+		case EntityDataTypePosition:
+			var v BlockPos
+			r.Position(&v)
+			(*x)[index] = v
+		case EntityDataTypeOptionalPosition:
+			var v EntityDataOptionalPosition
+			v.Marshal(r)
+			(*x)[index] = v
+		case EntityDataTypeDirection:
+			var v EntityDataDirection
+			v.Marshal(r)
+			(*x)[index] = v
+		case EntityDataTypeOptionalUUID:
+			var v EntityDataOptionalUUID
+			v.Marshal(r)
+			(*x)[index] = v
+		case EntityDataTypeBlockState:
+			var v EntityDataBlockState
+			v.Marshal(r)
+			(*x)[index] = v
+		case EntityDataTypeOptionalBlockState:
+			var v EntityDataOptionalBlockState
+			v.Marshal(r)
+			(*x)[index] = v
+		case EntityDataTypeTagNBT:
+			var v map[string]any
+			r.NBT(&v, nbt.NetworkBigEndian)
+			(*x)[index] = v
+		case EntityDataTypeParticle:
+			var v Particle
+			r.Particle(&v)
+			(*x)[index] = v
+		case EntityDataTypeParticles:
+			var v []Particle
+			FuncSliceVarint32Length(r, &v, r.Particle)
+			(*x)[index] = v
+		case EntityDataTypeVillagerData:
+			var v EntityDataVillagerData
+			v.Marshal(r)
+			(*x)[index] = v
+		case EntityDataTypeOptionalVarint32:
+			var v EntityDataOptionalVarint32
+			v.Marshal(r)
+			(*x)[index] = v
+		case EntityDataTypePose:
+			var v EntityDataPose
+			v.Marshal(r)
+			(*x)[index] = v
+		case EntityDataTypeCatVariant:
+			var v EntityDataCatVariant
+			v.Marshal(r)
+			(*x)[index] = v
+		case EntityDataTypeWolfVariant:
+			var v EntityDataWolfVariant
+			v.Marshal(r)
+			(*x)[index] = v
+		case EntityDataTypeFrogVariant:
+			var v EntityDataForgVariant
+			v.Marshal(r)
+			(*x)[index] = v
+		case EntityDataTypeOptionalGlobalPosition:
+			var v EntityDataOptionalGlobalPosition
+			v.Marshal(r)
+			(*x)[index] = v
+		case EntityDataTypePaintingVariant:
+			var v EntityDataPaintingVariant
+			v.Marshal(r)
+			(*x)[index] = v
+		case EntityDataTypeSnifferState:
+			var v EntityDataSnifferState
+			v.Marshal(r)
+			(*x)[index] = v
+		case EntityDataTypeArmadilloState:
+			var v EntityDataArmadilloState
+			v.Marshal(r)
+			(*x)[index] = v
+		case EntityDataTypeVec3:
+			var v mgl32.Vec3
+			r.Vec3(&v)
+			(*x)[index] = v
+		case EntityDataTypeQuaternion:
+			var v mgl32.Vec4
+			r.Vec4(&v)
+			(*x)[index] = v
+		default:
+			r.UnknownEnumOption(dataType, "entity metadata")
+		}
 	}
-	*x = data
 }
 
-// Vec4 reads four float32s into an mgl32.Vec4 from the underlying buffer.
-func (r *Reader) Vec4(x *mgl32.Vec4) {
-	r.Float32(&x[0])
-	r.Float32(&x[1])
-	r.Float32(&x[2])
-	r.Float32(&x[3])
+// ItemStack reads an ItemStack from the reader.
+func (r *Reader) ItemStack(x *ItemStack) {
+	r.Varint32(&x.ItemCount)
+	if x.ItemCount == 0 {
+		return
+	}
+	r.Varint32(&x.ItemID)
+	r.Varint32(&x.AddComponentsCount)
+	r.Varint32(&x.RemoveComponentsCount)
+	FuncSliceOfLen(r, uint32(x.AddComponentsCount), &x.ComponentsToAdd, r.ItemComponent)
+	FuncSliceOfLen(r, uint32(x.RemoveComponentsCount), &x.ComponentsToRemove, r.Varint32)
 }
 
-// Vec3 reads three float32s into an mgl32.Vec3 from the underlying buffer.
-func (r *Reader) Vec3(x *mgl32.Vec3) {
-	r.Float32(&x[0])
-	r.Float32(&x[1])
-	r.Float32(&x[2])
+// Position reads BlockPos by read a int64 from the underlying buffer.
+func (r *Reader) Position(x *BlockPos) {
+	var val uint64
+	r.Uint64(&val)
+	x[0] = int32(val >> 38)
+	x[1] = int32(val << 52 >> 52)
+	x[2] = int32(val << 26 >> 38)
 }
-
-// Vec2 reads two float32s into an mgl32.Vec2 from the underlying buffer.
-func (r *Reader) Vec2(x *mgl32.Vec2) {
-	r.Float32(&x[0])
-	r.Float32(&x[1])
-}
-
-// // BlockPos reads three varint32s into a BlockPos from the underlying buffer.
-// func (r *Reader) BlockPos(x *BlockPos) {
-// 	r.Varint32(&x[0])
-// 	r.Varint32(&x[1])
-// 	r.Varint32(&x[2])
-// }
-
-// // UBlockPos reads three varint32s, one unsigned for the y, into a BlockPos from the underlying buffer.
-// func (r *Reader) UBlockPos(x *BlockPos) {
-// 	r.Varint32(&x[0])
-// 	var y uint32
-// 	r.Varuint32(&y)
-// 	x[1] = int32(y)
-// 	r.Varint32(&x[2])
-// }
-
-// // ChunkPos writes a ChunkPos as 2 varint32s to the underlying buffer.
-// func (r *Reader) ChunkPos(x *ChunkPos) {
-// 	r.Varint32(&x[0])
-// 	r.Varint32(&x[1])
-// }
-
-// // SubChunkPos writes a SubChunkPos as 3 varint32s to the underlying buffer.
-// func (r *Reader) SubChunkPos(x *SubChunkPos) {
-// 	r.Varint32(&x[0])
-// 	r.Varint32(&x[1])
-// 	r.Varint32(&x[2])
-// }
-
-// // SoundPos reads an mgl32.Vec3 that serves as a position for a sound.
-// func (r *Reader) SoundPos(x *mgl32.Vec3) {
-// 	var b BlockPos
-// 	r.UBlockPos(&b)
-// 	*x = mgl32.Vec3{float32(b[0]) / 8, float32(b[1]) / 8, float32(b[2]) / 8}
-// }
 
 // Angle reads a rotational float32 from a single byte.
 func (r *Reader) Angle(x *float32) {
 	var v uint8
 	r.Uint8(&v)
 	*x = float32(v) * (360.0 / 256.0)
-}
-
-// RGB reads a color.RGBA x from a 0xRRGGBB uint32.
-func (r *Reader) RGB(x *color.RGBA) {
-	var v uint32
-	r.Uint32(&v)
-	*x = color.RGBA{
-		R: byte((v >> 16) & 0xff),
-		G: byte((v >> 8) & 0xff),
-		B: byte(v & 0xff),
-		A: 255,
-	}
-}
-
-// RGBA reads a color.RGBA x from a 0xAARRGGBB uint32.
-func (r *Reader) RGBA(x *color.RGBA) {
-	var v uint32
-	r.Uint32(&v)
-	*x = color.RGBA{
-		A: byte((v >> 24) & 0xff),
-		R: byte((v >> 16) & 0xff),
-		G: byte((v >> 8) & 0xff),
-		B: byte(v & 0xff),
-	}
-}
-
-// VarRGBA reads a color.RGBA x from a varuint32.
-func (r *Reader) VarRGBA(x *color.RGBA) {
-	var v uint32
-	r.Varuint32(&v)
-	*x = color.RGBA{
-		R: byte(v),
-		G: byte(v >> 8),
-		B: byte(v >> 16),
-		A: byte(v >> 24),
-	}
-}
-
-// Bytes reads the leftover bytes into a byte slice.
-func (r *Reader) Bytes(p *[]byte) {
-	var err error
-	*p, err = io.ReadAll(r.Reader())
-	if err != nil {
-		r.panic(err)
-	}
-}
-
-// NBT reads a compound tag into a map from the underlying buffer.
-func (r *Reader) NBT(m *map[string]any, encoding nbt.Encoding) {
-	dec := nbt.NewDecoderWithEncoding(r.Reader(), encoding)
-	dec.AllowZero = true
-
-	*m = make(map[string]any)
-	if err := dec.Decode(m); err != nil {
-		r.panic(err)
-	}
-}
-
-// NBTList reads a list of NBT tags from the underlying buffer.
-func (r *Reader) NBTList(m *[]any, encoding nbt.Encoding) {
-	if err := nbt.NewDecoderWithEncoding(r.Reader(), encoding).Decode(m); err != nil {
-		r.panic(err)
-	}
-}
-
-// NBTString reads a string tag into a string from the underlying buffer.
-func (r *Reader) NBTString(s *string, encoding nbt.Encoding) {
-	dec := nbt.NewDecoderWithEncoding(r.Reader(), encoding)
-	dec.AllowZero = true
-
-	*s = ""
-	if err := dec.Decode(s); err != nil {
-		r.panic(err)
-	}
 }
 
 // UUID reads a uuid.UUID from the underlying buffer.
@@ -224,352 +269,6 @@ func (r *Reader) UUID(x *uuid.UUID) {
 		r.panic(err)
 	}
 	*x = uuid.UUID(b)
-}
-
-// // PlayerInventoryAction reads a PlayerInventoryAction.
-// func (r *Reader) PlayerInventoryAction(x *UseItemTransactionData) {
-// 	r.Varint32(&x.LegacyRequestID)
-// 	if x.LegacyRequestID < -1 && (x.LegacyRequestID&1) == 0 {
-// 		Slice(r, &x.LegacySetItemSlots)
-// 	}
-// 	Slice(r, &x.Actions)
-// 	r.Varuint32(&x.ActionType)
-// 	r.Varuint32(&x.TriggerType)
-// 	r.BlockPos(&x.BlockPosition)
-// 	r.Varint32(&x.BlockFace)
-// 	r.Varint32(&x.HotBarSlot)
-// 	r.ItemInstance(&x.HeldItem)
-// 	r.Vec3(&x.Position)
-// 	r.Vec3(&x.ClickedPosition)
-// 	r.Varuint32(&x.BlockRuntimeID)
-// 	r.Varuint32(&x.ClientPrediction)
-// }
-
-// // GameRule reads a GameRule x from the Reader.
-// func (r *Reader) GameRule(x *GameRule) {
-// 	r.String(&x.Name)
-// 	r.Bool(&x.CanBeModifiedByPlayer)
-// 	var t uint32
-// 	r.Varuint32(&t)
-
-// 	switch t {
-// 	case 1:
-// 		var v bool
-// 		r.Bool(&v)
-// 		x.Value = v
-// 	case 2:
-// 		var v uint32
-// 		r.Varuint32(&v)
-// 		x.Value = v
-// 	case 3:
-// 		var v float32
-// 		r.Float32(&v)
-// 		x.Value = v
-// 	default:
-// 		r.UnknownEnumOption(t, "game rule type")
-// 	}
-// }
-
-// // EntityMetadata reads an entity metadata map from the underlying buffer into map x.
-// func (r *Reader) EntityMetadata(x *map[uint32]any) {
-// 	*x = map[uint32]any{}
-
-// 	var count uint32
-// 	r.Varuint32(&count)
-// 	for i := uint32(0); i < count; i++ {
-// 		var key, dataType uint32
-// 		r.Varuint32(&key)
-// 		r.Varuint32(&dataType)
-// 		switch dataType {
-// 		case EntityDataTypeByte:
-// 			var v byte
-// 			r.Uint8(&v)
-// 			(*x)[key] = v
-// 		case EntityDataTypeInt16:
-// 			var v int16
-// 			r.Int16(&v)
-// 			(*x)[key] = v
-// 		case EntityDataTypeInt32:
-// 			var v int32
-// 			r.Varint32(&v)
-// 			(*x)[key] = v
-// 		case EntityDataTypeFloat32:
-// 			var v float32
-// 			r.Float32(&v)
-// 			(*x)[key] = v
-// 		case EntityDataTypeString:
-// 			var v string
-// 			r.String(&v)
-// 			(*x)[key] = v
-// 		case EntityDataTypeCompoundTag:
-// 			var v map[string]any
-// 			r.NBT(&v, nbt.NetworkLittleEndian)
-// 			(*x)[key] = v
-// 		case EntityDataTypeBlockPos:
-// 			var v BlockPos
-// 			r.BlockPos(&v)
-// 			(*x)[key] = v
-// 		case EntityDataTypeInt64:
-// 			var v int64
-// 			r.Varint64(&v)
-// 			(*x)[key] = v
-// 		case EntityDataTypeVec3:
-// 			var v mgl32.Vec3
-// 			r.Vec3(&v)
-// 			(*x)[key] = v
-// 		default:
-// 			r.UnknownEnumOption(dataType, "entity metadata")
-// 		}
-// 	}
-// }
-
-// // ItemDescriptorCount reads an ItemDescriptorCount i from the underlying buffer.
-// func (r *Reader) ItemDescriptorCount(i *ItemDescriptorCount) {
-// 	var id uint8
-// 	r.Uint8(&id)
-
-// 	switch id {
-// 	case ItemDescriptorInvalid:
-// 		i.Descriptor = &InvalidItemDescriptor{}
-// 	case ItemDescriptorDefault:
-// 		i.Descriptor = &DefaultItemDescriptor{}
-// 	case ItemDescriptorMoLang:
-// 		i.Descriptor = &MoLangItemDescriptor{}
-// 	case ItemDescriptorItemTag:
-// 		i.Descriptor = &ItemTagItemDescriptor{}
-// 	case ItemDescriptorDeferred:
-// 		i.Descriptor = &DeferredItemDescriptor{}
-// 	case ItemDescriptorComplexAlias:
-// 		i.Descriptor = &ComplexAliasItemDescriptor{}
-// 	default:
-// 		r.UnknownEnumOption(id, "item descriptor type")
-// 		return
-// 	}
-
-// 	i.Descriptor.Marshal(r)
-// 	r.Varint32(&i.Count)
-// }
-
-// // ItemInstance reads an ItemInstance i from the underlying buffer.
-// func (r *Reader) ItemInstance(i *ItemInstance) {
-// 	x := &i.Stack
-// 	x.NBTData = make(map[string]any)
-// 	r.Varint32(&x.NetworkID)
-// 	if x.NetworkID == 0 {
-// 		// The item was air, so there is no more data we should read for the item instance. After all, air
-// 		// items aren't really anything.
-// 		x.MetadataValue, x.Count, x.CanBePlacedOn, x.CanBreak = 0, 0, nil, nil
-// 		return
-// 	}
-
-// 	r.Uint16(&x.Count)
-// 	r.Varuint32(&x.MetadataValue)
-
-// 	var hasNetID bool
-// 	r.Bool(&hasNetID)
-
-// 	if hasNetID {
-// 		r.Varint32(&i.StackNetworkID)
-// 	}
-
-// 	r.Varint32(&x.BlockRuntimeID)
-
-// 	var extraData []byte
-// 	r.ByteSlice(&extraData)
-
-// 	buf := bytes.NewBuffer(extraData)
-// 	bufReader := NewReader(buf, r.shieldID, r.limitsEnabled)
-
-// 	var length int16
-// 	bufReader.Int16(&length)
-
-// 	if length == -1 {
-// 		var version uint8
-// 		bufReader.Uint8(&version)
-
-// 		switch version {
-// 		case 1:
-// 			bufReader.NBT(&x.NBTData, nbt.LittleEndian)
-// 		default:
-// 			bufReader.UnknownEnumOption(version, "item user data version")
-// 			return
-// 		}
-// 	} else if length > 0 {
-// 		bufReader.NBT(&x.NBTData, nbt.LittleEndian)
-// 	}
-
-// 	FuncSliceUint32Length(bufReader, &x.CanBePlacedOn, bufReader.StringUTF)
-// 	FuncSliceUint32Length(bufReader, &x.CanBreak, bufReader.StringUTF)
-
-// 	if x.NetworkID == bufReader.shieldID {
-// 		var blockingTick int64
-// 		bufReader.Int64(&blockingTick)
-// 	}
-// }
-
-// // Item reads an ItemStack x from the underlying buffer.
-// func (r *Reader) Item(x *ItemStack) {
-// 	x.NBTData = make(map[string]any)
-// 	r.Varint32(&x.NetworkID)
-// 	if x.NetworkID == 0 {
-// 		// The item was air, so there is no more data we should read for the item instance. After all, air
-// 		// items aren't really anything.
-// 		x.MetadataValue, x.Count, x.CanBePlacedOn, x.CanBreak = 0, 0, nil, nil
-// 		return
-// 	}
-
-// 	r.Uint16(&x.Count)
-// 	r.Varuint32(&x.MetadataValue)
-// 	r.Varint32(&x.BlockRuntimeID)
-
-// 	var extraData []byte
-// 	r.ByteSlice(&extraData)
-
-// 	buf := bytes.NewBuffer(extraData)
-// 	bufReader := NewReader(buf, r.shieldID, r.limitsEnabled)
-
-// 	var length int16
-// 	bufReader.Int16(&length)
-
-// 	if length == -1 {
-// 		var version uint8
-// 		bufReader.Uint8(&version)
-
-// 		switch version {
-// 		case 1:
-// 			bufReader.NBT(&x.NBTData, nbt.LittleEndian)
-// 		default:
-// 			bufReader.UnknownEnumOption(version, "item user data version")
-// 			return
-// 		}
-// 	} else if length > 0 {
-// 		bufReader.NBT(&x.NBTData, nbt.LittleEndian)
-// 	}
-
-// 	FuncSliceUint32Length(bufReader, &x.CanBePlacedOn, bufReader.StringUTF)
-// 	FuncSliceUint32Length(bufReader, &x.CanBreak, bufReader.StringUTF)
-
-// 	if x.NetworkID == bufReader.shieldID {
-// 		var blockingTick int64
-// 		bufReader.Int64(&blockingTick)
-// 	}
-// }
-
-// // StackRequestAction reads a StackRequestAction from the reader.
-// func (r *Reader) StackRequestAction(x *StackRequestAction) {
-// 	var id uint8
-// 	r.Uint8(&id)
-// 	if !lookupStackRequestAction(id, x) {
-// 		r.UnknownEnumOption(id, "stack request action type")
-// 		return
-// 	}
-// 	(*x).Marshal(r)
-// }
-
-// // MaterialReducer reads a material reducer from the reader.
-// func (r *Reader) MaterialReducer(m *MaterialReducer) {
-// 	var mix int32
-// 	r.Varint32(&mix)
-// 	m.InputItem = ItemType{NetworkID: mix << 16, MetadataValue: uint32(mix & 0x7fff)}
-// 	Slice(r, &m.Outputs)
-// }
-
-// // Recipe reads a Recipe from the reader.
-// func (r *Reader) Recipe(x *Recipe) {
-// 	var recipeType int32
-// 	r.Varint32(&recipeType)
-// 	if !lookupRecipe(recipeType, x) {
-// 		r.UnknownEnumOption(recipeType, "crafting data recipe type")
-// 		return
-// 	}
-// 	(*x).Unmarshal(r)
-// }
-
-// // EventType reads an Event's type from the reader.
-// func (r *Reader) EventType(x *Event) {
-// 	var t int32
-// 	r.Varint32(&t)
-// 	if !lookupEvent(t, x) {
-// 		r.UnknownEnumOption(t, "event packet event type")
-// 	}
-// }
-
-// // TransactionDataType reads an InventoryTransactionData type from the reader.
-// func (r *Reader) TransactionDataType(x *InventoryTransactionData) {
-// 	var transactionType uint32
-// 	r.Varuint32(&transactionType)
-// 	if !lookupTransactionData(transactionType, x) {
-// 		r.UnknownEnumOption(transactionType, "inventory transaction data type")
-// 	}
-// }
-
-// // AbilityValue reads an ability value from the reader.
-// func (r *Reader) AbilityValue(x *any) {
-// 	valType, boolVal, floatVal := uint8(0), false, float32(0)
-// 	r.Uint8(&valType)
-// 	r.Bool(&boolVal)
-// 	r.Float32(&floatVal)
-// 	switch valType {
-// 	case 1:
-// 		*x = boolVal
-// 	case 2:
-// 		*x = floatVal
-// 	default:
-// 		r.InvalidValue(valType, "ability value type", "must be bool or float32")
-// 	}
-// }
-
-// CompressedBiomeDefinitions reads a list of compressed biome definitions from the reader. Minecraft decided to make their
-// own type of compression for this, so we have to implement it ourselves. It uses a dictionary of repeated byte sequences
-// to reduce the size of the data. The compressed data is read byte-by-byte, and if the byte is 0xff then it is assumed
-// that the next two bytes are an int16 for the dictionary index. Otherwise, the byte is copied to the output. The dictionary
-// index is then used to look up the byte sequence to be appended to the output.
-func (r *Reader) CompressedBiomeDefinitions(x *map[string]any) {
-	var length uint32
-	header := make([]byte, 10)
-	r.Varuint32(&length)
-	if _, err := r.Reader().Read(header); err != nil {
-		r.panic(err)
-	}
-	if !bytes.Equal(header, []byte("COMPRESSED")) {
-		r.InvalidValue(header, "compression header", fmt.Sprintf("must be COMPRESSED (%v)", []byte("COMPRESSED")))
-		return
-	}
-
-	var dictLength uint16
-	var entryLength uint8
-	r.Uint16(&dictLength)
-	dictionary := make([][]byte, dictLength)
-	for i := 0; i < int(dictLength); i++ {
-		r.Uint8(&entryLength)
-		dictionary[i] = make([]byte, int(entryLength))
-		if _, err := r.Reader().Read(dictionary[i]); err != nil {
-			r.panic(err)
-		}
-	}
-
-	var decompressed []byte
-	var dictIndex int16
-	for {
-		key, err := r.Reader().ReadByte()
-		if err != nil {
-			break
-		}
-		if key != 0xff {
-			decompressed = append(decompressed, key)
-			continue
-		}
-
-		r.Int16(&dictIndex)
-		if dictIndex >= 0 && int(dictIndex) < len(dictionary) {
-			decompressed = append(decompressed, dictionary[dictIndex]...)
-			continue
-		}
-		decompressed = append(decompressed, key)
-	}
-	if err := nbt.Unmarshal(decompressed, x); err != nil {
-		r.panic(err)
-	}
 }
 
 // Bitset reads a Java standard bitset that is []uint64
@@ -605,23 +304,160 @@ func (r *Reader) FixedBitset(x *Bitset, size int) {
 	x.bits.SetBytes(bitsSlice)
 }
 
+// SoundEvent reads a SoundEvent from the reader.
+func (r *Reader) SoundEvent(x *SoundEvent) {
+	r.Identifier(&x.SoundName)
+	OptionalFunc(r, &x.FixedRange, r.Float32)
+}
+
 // TeleportFlags reads a TeleportFlags from the reader.
 func (r *Reader) TeleportFlags(x *TeleportFlags) {
 	r.FixedBitset((*Bitset)(x), TeleportFlagBitsetSize)
 }
 
-// // SliceLimit checks if the value passed is lower than the limit passed. If
-// // not, the Reader panics.
-// func (r *Reader) SliceLimit(value uint32, max uint32) {
-// 	if value > max && r.limitsEnabled {
-// 		r.panicf("slice length was too long: length of %v (max %v)", value, max)
-// 	}
-// }
+// RecipeDisplay reads a RecipeDisplay from the reader.
+func (r *Reader) RecipeDisplay(x *RecipeDisplay) {
+	var t int32
+	r.Varint32(&t)
+	if !lookupRecipeDisplay(t, x) {
+		r.UnknownEnumOption(t, "recipe display type")
+	}
+	(*x).Marshal(r)
+}
 
-// // ShieldID returns the shield ID provided to the reader.
-// func (r *Reader) ShieldID() int32 {
-// 	return r.shieldID
-// }
+// SlotDisplay reads a SlotDisplay from the reader.
+func (r *Reader) SlotDisplay(x *SlotDisplay) {
+	var t int32
+	r.Varint32(&t)
+	if !lookupSlotDisplay(t, x) {
+		r.UnknownEnumOption(t, "slot display type")
+	}
+	(*x).Marshal(r)
+}
+
+// ChunkData reads a ChunkData from the reader.
+func (r *Reader) ChunkData(x *ChunkData) {
+	r.NBT(&x.Heightmaps, nbt.NetworkBigEndian)
+	FuncSliceVarint32Length(r, &x.Data, r.Uint8)
+	SliceVarint32Length(r, &x.BlockEntities)
+}
+
+// LightData reads a LightData from the reader.
+func (r *Reader) LightData(x *LightData) {
+	r.Bitset(&x.SkyLightMask)
+	r.Bitset(&x.BlockLightMask)
+	r.Bitset(&x.EmptySkyLightMask)
+	r.Bitset(&x.EmptyBlockLightMask)
+	FuncSliceVarint32Length(r, &x.SkyLightArrays, r.Uint8)
+	FuncSliceVarint32Length(r, &x.BlockLightArrays, r.Uint8)
+}
+
+// NBT reads a compound tag into a map from the underlying buffer.
+func (r *Reader) NBT(m *map[string]any, encoding nbt.Encoding) {
+	dec := nbt.NewDecoderWithEncoding(r.Reader(), encoding)
+	dec.AllowZero = true
+
+	*m = make(map[string]any)
+	if err := dec.Decode(m); err != nil {
+		r.panic(err)
+	}
+}
+
+// NBTList reads a list of NBT tags from the underlying buffer.
+func (r *Reader) NBTList(m *[]any, encoding nbt.Encoding) {
+	if err := nbt.NewDecoderWithEncoding(r.Reader(), encoding).Decode(m); err != nil {
+		r.panic(err)
+	}
+}
+
+// NBTString reads a string tag into a string from the underlying buffer.
+func (r *Reader) NBTString(s *string, encoding nbt.Encoding) {
+	dec := nbt.NewDecoderWithEncoding(r.Reader(), encoding)
+	dec.AllowZero = true
+
+	*s = ""
+	if err := dec.Decode(s); err != nil {
+		r.panic(err)
+	}
+}
+
+// ConsumeEffect reads an ConsumeEffect from the reader.
+func (r *Reader) ConsumeEffect(x *ConsumeEffect) {
+	var t int32
+	r.Varint32(&t)
+	if !lookupConsumeEffect(t, x) {
+		r.UnknownEnumOption(t, "consume effect type")
+	}
+	(*x).Marshal(r)
+}
+
+// ItemComponent reads an ItemComponent from the reader.
+func (r *Reader) ItemComponent(x *ItemComponent) {
+	var t int32
+	r.Varint32(&t)
+	if !lookupItemComponent(t, x) {
+		r.UnknownEnumOption(t, "item component type")
+	}
+	(*x).Marshal(r)
+}
+
+// Particle reads a Particle from the reader.
+func (r *Reader) Particle(x *Particle) {
+	var t int32
+	r.Varint32(&t)
+	if !lookupParticle(t, x) {
+		r.UnknownEnumOption(t, "particle type")
+	}
+	(*x).Marshal(r)
+}
+
+// Vec3 reads three float32s into an mgl32.Vec3 from the underlying buffer.
+func (r *Reader) Vec3(x *mgl32.Vec3) {
+	r.Float32(&x[0])
+	r.Float32(&x[1])
+	r.Float32(&x[2])
+}
+
+// Vec4 reads four float32s into an mgl32.Vec4 from the underlying buffer.
+func (r *Reader) Vec4(x *mgl32.Vec4) {
+	r.Float32(&x[0])
+	r.Float32(&x[1])
+	r.Float32(&x[2])
+	r.Float32(&x[3])
+}
+
+// RGB reads a color.RGBA x from a 0xRRGGBB uint32.
+func (r *Reader) RGB(x *color.RGBA) {
+	var v uint32
+	r.Uint32(&v)
+	*x = color.RGBA{
+		R: byte((v >> 16) & 0xff),
+		G: byte((v >> 8) & 0xff),
+		B: byte(v & 0xff),
+		A: 255,
+	}
+}
+
+// RGBA reads a color.RGBA x from a 0xAARRGGBB uint32.
+func (r *Reader) RGBA(x *color.RGBA) {
+	var v uint32
+	r.Uint32(&v)
+	*x = color.RGBA{
+		A: byte((v >> 24) & 0xff),
+		R: byte((v >> 16) & 0xff),
+		G: byte((v >> 8) & 0xff),
+		B: byte(v & 0xff),
+	}
+}
+
+// Bytes reads the leftover bytes into a byte slice.
+func (r *Reader) Bytes(p *[]byte) {
+	var err error
+	*p, err = io.ReadAll(r.Reader())
+	if err != nil {
+		r.panic(err)
+	}
+}
 
 // UnknownEnumOption panics with an unknown enum option error.
 func (r *Reader) UnknownEnumOption(value any, enum string) {
