@@ -256,7 +256,7 @@ func OptionalSliceMarshaler[T any, S ~[]T, A PtrMarshaler[T]](r IO, x *Optional[
 // OptionalSlice reads/writes an Optional[S].
 // Note that:
 //   - S must be a slice that satisfy []T.
-//   - f is used to read/write S.
+//   - f is used to read/write T.
 func OptionalSlice[T any, S ~[]T](r IO, x *Optional[S], f func(*T)) any {
 	r.Bool(&x.set)
 	if x.set {
