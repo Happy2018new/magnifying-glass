@@ -1,6 +1,6 @@
 package packet_login
 
-import packet_interface "magnifying-glass/minecraft/protocol/packet/interface"
+import packet_interface "github.com/Happy2018new/magnifying-glass/minecraft/protocol/packet/interface"
 
 // NewClientPool returns a new pool containing packets sent by a client.
 // Packets may be retrieved from it simply by indexing it with the packet ID.

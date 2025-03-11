@@ -1,6 +1,6 @@
 package encoding
 
-import "magnifying-glass/minecraft/nbt"
+import "github.com/Happy2018new/magnifying-glass/minecraft/nbt"
 
 // ------------------------- ArmorTrim -------------------------
 

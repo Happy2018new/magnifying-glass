@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"image/color"
 	"io"
-	"magnifying-glass/minecraft/nbt"
-	"magnifying-glass/minecraft/protocol/encoding/basic_encoding"
 	"math"
 	"reflect"
 	"slices"
 	"sort"
 	"unsafe"
+
+	"github.com/Happy2018new/magnifying-glass/minecraft/nbt"
+	"github.com/Happy2018new/magnifying-glass/minecraft/protocol/encoding/basic_encoding"
 
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/google/uuid"

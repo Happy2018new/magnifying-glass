@@ -1,7 +1,7 @@
 package encoding
 
 import (
-	"magnifying-glass/minecraft/nbt"
+	"github.com/Happy2018new/magnifying-glass/minecraft/nbt"
 
 	"github.com/google/uuid"
 )

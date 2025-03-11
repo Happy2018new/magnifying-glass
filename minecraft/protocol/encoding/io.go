@@ -2,7 +2,8 @@ package encoding
 
 import (
 	"image/color"
-	"magnifying-glass/minecraft/nbt"
+
+	"github.com/Happy2018new/magnifying-glass/minecraft/nbt"
 
 	"github.com/go-gl/mathgl/mgl32"
 	"github.com/google/uuid"

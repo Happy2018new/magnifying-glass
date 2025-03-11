@@ -1,4 +1,4 @@
-module magnifying-glass
+module github.com/Happy2018new/magnifying-glass
 
 go 1.23
 

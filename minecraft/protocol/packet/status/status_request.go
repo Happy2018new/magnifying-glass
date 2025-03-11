@@ -1,8 +1,8 @@
 package packet_status
 
 import (
-	"magnifying-glass/minecraft/protocol/encoding"
-	packet_interface "magnifying-glass/minecraft/protocol/packet/interface"
+	"github.com/Happy2018new/magnifying-glass/minecraft/protocol/encoding"
+	packet_interface "github.com/Happy2018new/magnifying-glass/minecraft/protocol/packet/interface"
 )
 
 // The status can only be requested once immediately

@@ -1,7 +1,7 @@
 package packet_interface
 
 import (
-	"magnifying-glass/minecraft/protocol/encoding"
+	"github.com/Happy2018new/magnifying-glass/minecraft/protocol/encoding"
 )
 
 const (
