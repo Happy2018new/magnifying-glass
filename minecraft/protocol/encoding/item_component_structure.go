@@ -284,22 +284,4 @@ func (j *JukeboxSong) Marshal(io IO) {
 	io.Varint32(&j.Output)
 }
 
-// ------------------------- PlayerProfile -------------------------
-
-// PlayerProfileProperty ..
-type PlayerProfileProperty struct {
-	// Name ..
-	Name string
-	// Value ..
-	Value string
-	// Signature ..
-	Signature Optional[string]
-}
-
-func (p *PlayerProfileProperty) Marshal(io IO) {
-	io.String(&p.Name)
-	io.String(&p.Value)
-	OptionalFunc(io, &p.Signature, io.String)
-}
-
 // ------------------------- END -------------------------

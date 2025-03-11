@@ -1356,7 +1356,7 @@ type ItemComponentProfile struct {
 	ProfileName Optional[string]
 	// UniqueID ..
 	UniqueID Optional[uuid.UUID]
-	// Property ..
+	// See PlayerProfileProperty for more information.
 	Property []PlayerProfileProperty
 }
 
