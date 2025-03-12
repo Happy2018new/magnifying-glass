@@ -1,0 +1,32 @@
+package packet_configuration
+
+const (
+	IDClientBoundCookieRequest int32 = iota
+	IDClientBoundPluginMessage
+	IDClientBoundDisconnect
+	IDClientBoundFinishConfiguration
+	IDClientBoundKeepAlive
+	IDClientBoundPing
+	IDClientBoundResetChat
+	IDClientBoundRegistryData
+	IDClientBoundRemoveResourcePack
+	IDClientBoundAddResourcePack
+	IDClientBoundStoreCookie
+	IDClientBoundTransfer
+	IDClientBoundFeatureFlags
+	IDClientBoundUpdateTags
+	IDClientBoundKnownPacks
+	IDClientBoundCustomReportDetails
+	IDClientBoundServerLinks
+)
+
+const (
+	IDServerBoundClientInformation int32 = iota
+	IDServerBoundCookieResponse
+	IDServerBoundPluginMessage
+	IDServerBoundAcknowledgeFinishConfiguration
+	IDServerBoundKeepAlive
+	IDServerBoundPong
+	IDServerBoundResourcePackResponse
+	IDServerBoundKnownPacks
+)
