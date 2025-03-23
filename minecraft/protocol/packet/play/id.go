@@ -22,4 +22,14 @@ const (
 	IDClientBoundCloseContainer
 	IDClientBoundSetContainerContent
 	IDClientBoundSetContainerProperty
+	IDClientBoundSetContainerSlot
+	IDClientBoundCookieRequest
+	IDClientBoundSetCooldown
+	IDClientBoundChatSuggestions
+	IDClientBoundPluginMessage
+	IDClientBoundDamageEvent
+	IDClientBoundDebugSample
+	IDClientBoundDeleteMessage
+	IDClientBoundDisconnect
+	IDClientBoundDisguisedChatMessage
 )

@@ -35,9 +35,7 @@ type IO interface {
 	Float32(x *float32)
 	Float64(x *float64)
 	String(x *string)
-	TextComponentString(x *TextComponentString)
-	TextComponentComplex(x *TextComponentComplex)
-	TextComponentComplexOptional(x *TextComponentComplexOptional)
+	TextComponent(x *TextComponent)
 	JsonTextComponent(x *JsonTextComponent)
 	Identifier(x *Identifier)
 	Varint32(x *int32)
@@ -69,6 +67,7 @@ type IO interface {
 	Vec4(x *mgl32.Vec4)
 	RGB(x *color.RGBA)
 	RGBA(x *color.RGBA)
+	EntityPos(x *EntityPos)
 
 	Bytes(x *[]byte)
 	UnknownEnumOption(value any, enum string)

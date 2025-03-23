@@ -32,7 +32,7 @@ type ServerLink struct {
 	// Different from BuiltInLabelEnum,
 	// it is preset if IsBuiltIn is false,
 	// and that means this link is not a built-in constant.
-	CustomLabel TextComponentComplex
+	CustomLabel TextComponent
 	// Valid URL.
 	URL string
 }
@@ -42,7 +42,7 @@ func (s *ServerLink) Marshal(io IO) {
 	if s.IsBuiltIn {
 		io.Varint32(&s.BuiltInLabel)
 	} else {
-		io.TextComponentComplex(&s.CustomLabel)
+		io.TextComponent(&s.CustomLabel)
 	}
 	io.String(&s.URL)
 }

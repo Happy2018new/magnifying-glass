@@ -377,7 +377,7 @@ func (i *ItemComponentUnbreakable) Marshal(io IO) {
 // Normally shown in italic,
 // and changeable at an anvil.
 type ItemComponentCustomName struct {
-	CustomName TextComponentComplex
+	CustomName TextComponent
 }
 
 func (i *ItemComponentCustomName) Name() string {
@@ -385,13 +385,13 @@ func (i *ItemComponentCustomName) Name() string {
 }
 
 func (i *ItemComponentCustomName) Marshal(io IO) {
-	io.TextComponentComplex(&i.CustomName)
+	io.TextComponent(&i.CustomName)
 }
 
 // Override for the item's default name.
 // Shown when the item has no custom name.
 type ItemComponentItemName struct {
-	ItemName TextComponentComplex
+	ItemName TextComponent
 }
 
 func (i *ItemComponentItemName) Name() string {
@@ -399,7 +399,7 @@ func (i *ItemComponentItemName) Name() string {
 }
 
 func (i *ItemComponentItemName) Marshal(io IO) {
-	io.TextComponentComplex(&i.ItemName)
+	io.TextComponent(&i.ItemName)
 }
 
 // Item's model.
@@ -417,7 +417,7 @@ func (i *ItemComponentItemModel) Marshal(io IO) {
 
 // Item's lore.
 type ItemComponentLore struct {
-	Lines []TextComponentComplex
+	Lines []TextComponent
 }
 
 func (i *ItemComponentLore) Name() string {
@@ -425,7 +425,7 @@ func (i *ItemComponentLore) Name() string {
 }
 
 func (i *ItemComponentLore) Marshal(io IO) {
-	FuncSliceVarint32Length(io, &i.Lines, io.TextComponentComplex)
+	FuncSliceVarint32Length(io, &i.Lines, io.TextComponent)
 }
 
 const (

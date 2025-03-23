@@ -85,7 +85,7 @@ func lookupBossBarAction(id int32, x *BossBarAction) bool {
 // BossBarActionAdd ..
 type BossBarActionAdd struct {
 	// Effects ..
-	Title TextComponentComplex
+	Title TextComponent
 	// From 0 to 1. Values greater than
 	// 1 do not crash a vanilla client,
 	// and start rendering part of a second
@@ -106,7 +106,7 @@ type BossBarActionAdd struct {
 }
 
 func (b *BossBarActionAdd) Marshal(io IO) {
-	io.TextComponentComplex(&b.Title)
+	io.TextComponent(&b.Title)
 	io.Float32(&b.Health)
 	io.Varint32(&b.Color)
 	io.Varint32(&b.Division)
@@ -131,11 +131,11 @@ func (b *BossBarActionUpdateHealth) Marshal(io IO) {
 // BossBarActionUpdateTitle ..
 type BossBarActionUpdateTitle struct {
 	// Same as BossBarActionAdd.Title.
-	Title TextComponentComplex
+	Title TextComponent
 }
 
 func (b *BossBarActionUpdateTitle) Marshal(io IO) {
-	io.TextComponentComplex(&b.Title)
+	io.TextComponent(&b.Title)
 }
 
 // BossBarActionUpdateStyle ..

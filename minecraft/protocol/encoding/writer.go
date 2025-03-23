@@ -52,21 +52,17 @@ func (w *Writer) String(x *string) {
 	_, _ = w.Writer().Write([]byte(*x))
 }
 
-// TextComponentString writes a TextComponentString to the writer.
-func (w *Writer) TextComponentString(x *TextComponentString) {
-	w.String((*string)(x))
-}
-
-// TextComponentComplex writes a TextComponentComplex to the writer.
-func (w *Writer) TextComponentComplex(x *TextComponentComplex) {
-	w.NBT((*map[string]any)(x), nbt.NetworkBigEndian)
-}
-
-// TextComponentComplexOptional writes a TextComponentComplexOptional to the writer.
-func (w *Writer) TextComponentComplexOptional(x *TextComponentComplexOptional) {
-	w.Bool(&x.Existed)
-	if x.Existed {
-		w.NBT(&x.Data, nbt.NetworkBigEndian)
+// TextComponent writes a TextComponent to the writer.
+func (w *Writer) TextComponent(x *TextComponent) {
+	switch x.dataType {
+	case TextComponentDataTypeTagString:
+		v := x.payload.(string)
+		w.NBTString(&v, nbt.NetworkBigEndian)
+	case TextComponentDataTypeTagNBT:
+		v := x.payload.(map[string]any)
+		w.NBT(&v, nbt.NetworkBigEndian)
+	default:
+		w.UnknownEnumOption(x.dataType, "unknown text component data type")
 	}
 }
 
@@ -120,14 +116,14 @@ func (w *Writer) EntityMetadata(x *EntityMetadata) {
 			entityDataTypeString := EntityDataTypeString
 			w.Varint32(&entityDataTypeString)
 			w.String(&v)
-		case TextComponentComplex:
+		case TextComponent:
 			entityDataTypeTextCompound := EntityDataTypeTextCompound
 			w.Varint32(&entityDataTypeTextCompound)
-			w.TextComponentComplex(&v)
-		case TextComponentComplexOptional:
+			w.TextComponent(&v)
+		case TextComponentOptional:
 			entityDataTypeOptionalTextCompound := EntityDataTypeOptionalTextCompound
 			w.Varint32(&entityDataTypeOptionalTextCompound)
-			w.TextComponentComplexOptional(&v)
+			Single(w, &v)
 		case ItemStack:
 			entityDataTypeItemStack := EntityDataTypeItemStack
 			w.Varint32(&entityDataTypeItemStack)
@@ -441,6 +437,13 @@ func (w *Writer) RGB(x *color.RGBA) {
 func (w *Writer) RGBA(x *color.RGBA) {
 	val := uint32(x.A)<<24 | uint32(x.R)<<16 | uint32(x.G)<<8 | uint32(x.B)
 	w.Uint32(&val)
+}
+
+// EntityPos writes a entity pos x as three float64s to the underlying buffer.
+func (w *Writer) EntityPos(x *EntityPos) {
+	w.Float64(&x[0])
+	w.Float64(&x[1])
+	w.Float64(&x[2])
 }
 
 // Bytes appends a []byte to the underlying buffer.

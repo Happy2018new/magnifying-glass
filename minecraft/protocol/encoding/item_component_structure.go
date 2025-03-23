@@ -28,7 +28,7 @@ type ArmorTrimMaterial struct {
 	// Override ..
 	Override []ArmorTrimMaterialOverride
 	// Description ..
-	Description TextComponentComplex
+	Description TextComponent
 }
 
 func (a *ArmorTrimMaterial) Marshal(io IO) {
@@ -36,7 +36,7 @@ func (a *ArmorTrimMaterial) Marshal(io IO) {
 	io.Varint32(&a.Ingredient)
 	io.Float32(&a.ItemModelIndex)
 	SliceVarint32Length(io, &a.Override)
-	io.TextComponentComplex(&a.Description)
+	io.TextComponent(&a.Description)
 }
 
 // ------------------------- AttributeModifier -------------------------
@@ -232,14 +232,14 @@ type Instrument struct {
 	// The range of the instrument.
 	Range float32
 	// Description shown in the item tooltip.
-	Description TextComponentComplex
+	Description TextComponent
 }
 
 func (i *Instrument) Marshal(io IO) {
 	IDOrXFunc(io, &i.SoundEvent, io.SoundEvent)
 	io.Float32(&i.UseDurationa)
 	io.Float32(&i.Range)
-	io.TextComponentComplex(&i.Description)
+	io.TextComponent(&i.Description)
 }
 
 // ------------------------- ItemToolRule -------------------------
@@ -269,7 +269,7 @@ type JukeboxSong struct {
 	// The sound to be played.
 	SoundEvent IDOrX[SoundEvent]
 	// The description shown in the item lore.
-	Description TextComponentComplex
+	Description TextComponent
 	// The duration the songs should play for, in seconds.
 	Duration float32
 	// The output strength given by a comparator.
@@ -279,7 +279,7 @@ type JukeboxSong struct {
 
 func (j *JukeboxSong) Marshal(io IO) {
 	IDOrXFunc(io, &j.SoundEvent, io.SoundEvent)
-	io.TextComponentComplex(&j.Description)
+	io.TextComponent(&j.Description)
 	io.Float32(&j.Duration)
 	io.Varint32(&j.Output)
 }

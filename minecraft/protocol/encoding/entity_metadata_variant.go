@@ -36,15 +36,15 @@ type PaintingVariant struct {
 	// asset located at textures/painting.
 	AssetID Identifier
 	// The displayed title of the painting.
-	Title Optional[TextComponentComplex]
+	Title Optional[TextComponent]
 	// The displayed author of the painting.
-	Author Optional[TextComponentComplex]
+	Author Optional[TextComponent]
 }
 
 func (p *PaintingVariant) Marshal(io IO) {
 	io.Int32(&p.Width)
 	io.Int32(&p.Height)
 	io.Identifier(&p.AssetID)
-	OptionalFunc(io, &p.Title, io.TextComponentComplex)
-	OptionalFunc(io, &p.Author, io.TextComponentComplex)
+	OptionalFunc(io, &p.Title, io.TextComponent)
+	OptionalFunc(io, &p.Author, io.TextComponent)
 }

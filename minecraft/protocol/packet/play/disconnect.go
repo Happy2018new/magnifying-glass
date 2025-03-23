@@ -1,13 +1,15 @@
-package packet_configuration
+package packet_play
 
 import (
 	"github.com/Happy2018new/magnifying-glass/minecraft/protocol/encoding"
 	packet_interface "github.com/Happy2018new/magnifying-glass/minecraft/protocol/packet/interface"
 )
 
-// Disconnect ..
+// Sent by the server before it disconnects a client.
+// The client assumes that the server has already closed
+// the connection by the time the packet arrives.
 type Disconnect struct {
-	// The reason why the player was disconnected.
+	// Displayed to the client when the connection terminates.
 	Reason encoding.TextComponent
 }
 

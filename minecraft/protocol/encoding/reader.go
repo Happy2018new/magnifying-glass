@@ -60,22 +60,27 @@ func (r *Reader) String(x *string) {
 	*x = *(*string)(unsafe.Pointer(&data))
 }
 
-// TextComponentString reads a TextComponentString from the reader.
-func (r *Reader) TextComponentString(x *TextComponentString) {
-	r.String((*string)(x))
-}
+// TextComponent reads a TextComponent from the reader.
+func (r *Reader) TextComponent(x *TextComponent) {
+	var result any
 
-// TextComponentComplex reads a TextComponentComplex from the reader.
-func (r *Reader) TextComponentComplex(x *TextComponentComplex) {
-	r.NBT((*map[string]any)(x), nbt.NetworkBigEndian)
-}
+	dec := nbt.NewDecoderWithEncoding(r.Reader(), nbt.NetworkBigEndian)
+	dec.AllowZero = true
 
-// TextComponentComplexOptional reads a TextComponentComplexOptional from the reader.
-func (r *Reader) TextComponentComplexOptional(x *TextComponentComplexOptional) {
-	r.Bool(&x.Existed)
-	if x.Existed {
-		r.NBT(&x.Data, nbt.NetworkBigEndian)
+	if err := dec.Decode(&result); err != nil {
+		panic(err)
 	}
+
+	switch result.(type) {
+	case string:
+		x.dataType = TextComponentDataTypeTagString
+	case map[string]any:
+		x.dataType = TextComponentDataTypeTagNBT
+	default:
+		r.UnknownEnumOption(result, "unknown text component data type")
+	}
+
+	x.payload = result
 }
 
 // JsonTextComponent reads a JsonTextComponent from the reader.
@@ -125,12 +130,12 @@ func (r *Reader) EntityMetadata(x *EntityMetadata) {
 			r.String(&v)
 			(*x)[index] = v
 		case EntityDataTypeTextCompound:
-			var v TextComponentComplex
-			r.TextComponentComplex(&v)
+			var v TextComponent
+			r.TextComponent(&v)
 			(*x)[index] = v
 		case EntityDataTypeOptionalTextCompound:
-			var v TextComponentComplexOptional
-			r.TextComponentComplexOptional(&v)
+			var v TextComponentOptional
+			Single(r, &v)
 			(*x)[index] = v
 		case EntityDataTypeItemStack:
 			var v ItemStack
@@ -467,6 +472,13 @@ func (r *Reader) RGBA(x *color.RGBA) {
 		G: byte((v >> 8) & 0xff),
 		B: byte(v & 0xff),
 	}
+}
+
+// EntityPos reads EntityPos by read three float64 from the underlying buffer.
+func (r *Reader) EntityPos(x *EntityPos) {
+	r.Float64(&x[0])
+	r.Float64(&x[1])
+	r.Float64(&x[2])
 }
 
 // Bytes reads the leftover bytes into a byte slice.

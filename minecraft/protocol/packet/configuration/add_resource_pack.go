@@ -29,7 +29,7 @@ type AddResourcePack struct {
 	// This is shown in the prompt making
 	// the client accept or decline the
 	// resource pack (only if present).
-	PromptMessage encoding.Optional[encoding.TextComponentComplex]
+	PromptMessage encoding.TextComponentOptional
 }
 
 // ID ..
@@ -52,5 +52,5 @@ func (p *AddResourcePack) Marshal(io encoding.IO) {
 	io.String(&p.URL)
 	io.String(&p.Hash)
 	io.Bool(&p.Forced)
-	encoding.OptionalFunc(io, &p.PromptMessage, io.TextComponentComplex)
+	encoding.Single(io, &p.PromptMessage)
 }

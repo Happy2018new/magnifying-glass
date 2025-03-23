@@ -8,7 +8,7 @@ import (
 // Disconnect (login)
 type Disconnect struct {
 	// The reason why the player was disconnected.
-	Reason encoding.TextComponentComplex
+	Reason encoding.JsonTextComponent
 }
 
 // ID ..
@@ -27,5 +27,5 @@ func (p *Disconnect) BoundType() uint8 {
 }
 
 func (p *Disconnect) Marshal(io encoding.IO) {
-	io.TextComponentComplex(&p.Reason)
+	io.JsonTextComponent(&p.Reason)
 }

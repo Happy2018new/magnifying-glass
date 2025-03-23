@@ -80,10 +80,10 @@ type CommandSuggestMatch struct {
 	// include a leading / on commands.
 	Insert string
 	// Tooltip to display.
-	Tooltip Optional[TextComponentComplex]
+	Tooltip Optional[TextComponent]
 }
 
 func (c *CommandSuggestMatch) Marshal(io IO) {
 	io.String(&c.Insert)
-	OptionalFunc(io, &c.Tooltip, io.TextComponentComplex)
+	OptionalFunc(io, &c.Tooltip, io.TextComponent)
 }
