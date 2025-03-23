@@ -12,7 +12,7 @@ const (
 )
 
 const (
-	DisplayedSkinPartFlagCapEnabled int32 = 1 << iota
+	DisplayedSkinPartFlagCapEnabled uint8 = 1 << iota
 	DisplayedSkinPartFlagJacketEnabled
 	DisplayedSkinPartFlagLeftSleeveEnabled
 	DisplayedSkinPartFlagRightSleeveEnabled

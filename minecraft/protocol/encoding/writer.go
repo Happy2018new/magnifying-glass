@@ -343,8 +343,8 @@ func (w *Writer) LightData(x *LightData) {
 	w.Bitset(&x.BlockLightMask)
 	w.Bitset(&x.EmptySkyLightMask)
 	w.Bitset(&x.EmptyBlockLightMask)
-	FuncSliceVarint32Length(w, &x.SkyLightArrays, w.Uint8)
-	FuncSliceVarint32Length(w, &x.BlockLightArrays, w.Uint8)
+	SliceVarint32Length(w, &x.SkyLightArrays)
+	SliceVarint32Length(w, &x.BlockLightArrays)
 }
 
 // NBT writes a map as NBT to the underlying buffer using the encoding passed.
@@ -396,6 +396,24 @@ func (w *Writer) Particle(x *Particle) {
 	}
 	w.Varint32(&t)
 	(*x).Marshal(w)
+}
+
+// BossBarActionType writes the type of BossBarAction to the writer.
+func (w *Writer) BossBarActionType(x *BossBarAction) {
+	var t int32
+	if !lookupBossBarActionType(*x, &t) {
+		w.UnknownEnumOption(fmt.Sprintf("%T", x), "boss bar action type")
+	}
+	w.Varint32(&t)
+}
+
+// CommandParserType writes the type of CommandParserType to the writer.
+func (w *Writer) CommandParserType(x *CommandParser) {
+	var t int32
+	if !lookupCommandParserType(*x, &t) {
+		w.UnknownEnumOption(fmt.Sprintf("%T", x), "command parser type")
+	}
+	w.Varint32(&t)
 }
 
 // Vec4 writes an mgl32.Vec4 as 4 float32s to the underlying buffer.

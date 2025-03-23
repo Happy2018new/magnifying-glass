@@ -13,7 +13,7 @@ const (
 // The packet hold some methods to allows you to do the following things.
 //   - Get the ID of this packet.
 //   - Get the resource string of this packet.
-//   - Understand this packet is used to send to server or send to client.
+//   - Figure out this packet is used to send to server or send to client.
 //   - Encode this packet to binary and decode this packet from binary.
 type Packet interface {
 	// ID returns the ID of the packet.
@@ -28,9 +28,9 @@ type Packet interface {
 	// Otherwise (1; BoundTypeClient) this packet is send from server to client.
 	BoundType() uint8
 	// Marshal encodes or decodes a Packet, depending on the encoding.IO
-	// implementation passed. When passing a protocol.Writer, Marshal will
+	// implementation passed. When passing a encoding.Writer, Marshal will
 	// encode the Packet into its binary representation and write it to the
-	// protocol.Writer. On the other hand, when passing a protocol.Reader,
+	// encoding.Writer. On the other hand, when passing a encoding.Reader,
 	// Marshal will decode the bytes from the reader into the Packet.
 	Marshal(io encoding.IO)
 }

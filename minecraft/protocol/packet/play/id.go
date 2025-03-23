@@ -1,0 +1,25 @@
+package packet_play
+
+const (
+	IDClientBoundBundleDelimiter int32 = iota
+	IDClientBoundSpawnEntity
+	IDClientBoundSpawnExperienceOrb
+	IDClientBoundEntityAnimation
+	IDClientBoundAwardStatistics
+	IDClientBoundAcknowledgeBlockChange
+	IDClientBoundSetBlockDestroyStage
+	IDClientBoundBlockEntityData
+	IDClientBoundBlockAction
+	IDClientBoundBlockUpdate
+	IDClientBoundBossBar
+	IDClientBoundChangeDifficulty
+	IDClientBoundChunkBatchFinished
+	IDClientBoundChunkBatchStart
+	IDClientBoundChunkBiomes
+	IDClientBoundClearTitles
+	IDClientBoundCommandSuggestionsResponse
+	IDClientBoundCommands
+	IDClientBoundCloseContainer
+	IDClientBoundSetContainerContent
+	IDClientBoundSetContainerProperty
+)

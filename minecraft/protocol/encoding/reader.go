@@ -349,8 +349,8 @@ func (r *Reader) LightData(x *LightData) {
 	r.Bitset(&x.BlockLightMask)
 	r.Bitset(&x.EmptySkyLightMask)
 	r.Bitset(&x.EmptyBlockLightMask)
-	FuncSliceVarint32Length(r, &x.SkyLightArrays, r.Uint8)
-	FuncSliceVarint32Length(r, &x.BlockLightArrays, r.Uint8)
+	SliceVarint32Length(r, &x.SkyLightArrays)
+	SliceVarint32Length(r, &x.BlockLightArrays)
 }
 
 // NBT reads a compound tag into a map from the underlying buffer.
@@ -410,6 +410,24 @@ func (r *Reader) Particle(x *Particle) {
 		r.UnknownEnumOption(t, "particle type")
 	}
 	(*x).Marshal(r)
+}
+
+// BossBarActionType reads a BossBarActionType's type from the reader.
+func (r *Reader) BossBarActionType(x *BossBarAction) {
+	var t int32
+	r.Varint32(&t)
+	if !lookupBossBarAction(t, x) {
+		r.UnknownEnumOption(t, "boss bar action type")
+	}
+}
+
+// CommandParserType reads a CommandParserType's type from the reader.
+func (r *Reader) CommandParserType(x *CommandParser) {
+	var t int32
+	r.Varint32(&t)
+	if !lookupCommandParser(t, x) {
+		r.UnknownEnumOption(t, "command parser type")
+	}
 }
 
 // Vec3 reads three float32s into an mgl32.Vec3 from the underlying buffer.

@@ -63,6 +63,8 @@ type IO interface {
 	ConsumeEffect(x *ConsumeEffect)
 	ItemComponent(x *ItemComponent)
 	Particle(x *Particle)
+	BossBarActionType(x *BossBarAction)
+	CommandParserType(x *CommandParser)
 	Vec3(x *mgl32.Vec3)
 	Vec4(x *mgl32.Vec4)
 	RGB(x *color.RGBA)

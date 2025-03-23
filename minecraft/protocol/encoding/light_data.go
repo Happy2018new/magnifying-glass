@@ -1,5 +1,20 @@
 package encoding
 
+// LightArrays is a single inner light array,
+// which used on LightData structure.
+//
+// Note that:
+// 		- The length of LightArrays is always 2048.
+// 		- There is 1 array for each bit set to true
+// 		  in the sky light mask or block light mask,
+// 		  starting with the lowest value.
+// 		- Half a byte per light value.
+type LightArrays []byte
+
+func (l *LightArrays) Marshal(io IO) {
+	FuncSliceVarint32Length(io, (*[]byte)(l), io.Uint8)
+}
+
 // LightData maybe is used to do world render,
 // to notify how client render the brightness
 // of the block.
@@ -31,16 +46,20 @@ type LightData struct {
 	//
 	// The order of bits is the same as in Sky Light Mask.
 	EmptyBlockLightMask Bitset
+	// LightArrays is a single inner light array.
+	//
 	// The length of any inner array is always 2048;
 	// There is 1 array for each bit set to true in the sky light mask,
 	// starting with the lowest value.
 	//
 	// Half a byte per light value.
-	SkyLightArrays []byte
+	SkyLightArrays []LightArrays
+	// LightArrays is a single inner light array.
+	//
 	// The length of any inner array is always 2048;
 	// There is 1 array for each bit set to true in the block light mask,
 	// starting with the lowest value.
 	//
 	// Half a byte per light value.
-	BlockLightArrays []byte
+	BlockLightArrays []LightArrays
 }
