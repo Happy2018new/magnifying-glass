@@ -18,26 +18,26 @@ import (
 // The vanilla client requires the minecraft:core pack
 // with version 1.21.4 for a normal login sequence.
 // This packet must be sent before the Registry Data packets.
-type ClientboundKnownPacks struct {
+type ClientBoundKnownPacks struct {
 	// See ResourcePack for more information.
 	KnownPacks []encoding.ResourcePack
 }
 
 // ID ..
-func (p *ClientboundKnownPacks) ID() int32 {
+func (p *ClientBoundKnownPacks) ID() int32 {
 	return IDClientBoundKnownPacks
 }
 
 // Resource ..
-func (p *ClientboundKnownPacks) Resource() string {
+func (p *ClientBoundKnownPacks) Resource() string {
 	return "select_known_packs"
 }
 
 // BoundType ..
-func (p *ClientboundKnownPacks) BoundType() uint8 {
+func (p *ClientBoundKnownPacks) BoundType() uint8 {
 	return packet_interface.BoundTypeClient
 }
 
-func (p *ClientboundKnownPacks) Marshal(io encoding.IO) {
+func (p *ClientBoundKnownPacks) Marshal(io encoding.IO) {
 	encoding.SliceVarint32Length(io, &p.KnownPacks)
 }

@@ -6,7 +6,7 @@ import (
 )
 
 // The server will frequently send out a keep-alive
-// [see Clientbound Keep Alive (https://minecraft.wiki/w/Java_Edition_protocol#Clientbound_Keep_Alive_(configuration)) ],
+// [see ClientBound Keep Alive (https://minecraft.wiki/w/Java_Edition_protocol#ClientBound_Keep_Alive_(configuration)) ],
 // each containing a random ID.
 // The client must respond with the same packet.
 type ServerboundKeepAlive struct {

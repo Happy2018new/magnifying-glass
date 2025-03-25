@@ -25,7 +25,7 @@ func NewServerPool() packet_interface.Pool {
 		IDClientBoundPluginMessage:       &ClientBoundPluginMessage{},
 		IDClientBoundDisconnect:          &Disconnect{},
 		IDClientBoundFinishConfiguration: &FinishConfiguration{},
-		IDClientBoundKeepAlive:           &ClientboundKeepAlive{},
+		IDClientBoundKeepAlive:           &ClientBoundKeepAlive{},
 		IDClientBoundPing:                &Ping{},
 		IDClientBoundResetChat:           &ResetChat{},
 		IDClientBoundRegistryData:        &RegistryData{},
@@ -35,7 +35,7 @@ func NewServerPool() packet_interface.Pool {
 		IDClientBoundTransfer:            &Transfer{},
 		IDClientBoundFeatureFlags:        &FeatureFlags{},
 		IDClientBoundUpdateTags:          &UpdateTags{},
-		IDClientBoundKnownPacks:          &ClientboundKnownPacks{},
+		IDClientBoundKnownPacks:          &ClientBoundKnownPacks{},
 		IDClientBoundCustomReportDetails: &CustomReportDetails{},
 		IDClientBoundServerLinks:         &ServerLinks{},
 	}

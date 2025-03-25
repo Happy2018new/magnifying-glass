@@ -18,7 +18,7 @@ import (
 // Helpful links:
 //   - plugin channels (https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Plugin_channels)
 //   - Dinnerbone's blog (https://dinnerbone.com/blog/2012/01/13/minecraft-plugin-channels-messaging/)
-type ClientboundPluginMessage struct {
+type ClientBoundPluginMessage struct {
 	// Name of the
 	// plugin channel (https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Plugin_channels)
 	// used to send the data.
@@ -29,21 +29,21 @@ type ClientboundPluginMessage struct {
 }
 
 // ID ..
-func (p *ClientboundPluginMessage) ID() int32 {
+func (p *ClientBoundPluginMessage) ID() int32 {
 	return IDClientBoundPluginMessage
 }
 
 // Resource ..
-func (p *ClientboundPluginMessage) Resource() string {
+func (p *ClientBoundPluginMessage) Resource() string {
 	return "custom_payload"
 }
 
 // BoundType ..
-func (p *ClientboundPluginMessage) BoundType() uint8 {
+func (p *ClientBoundPluginMessage) BoundType() uint8 {
 	return packet_interface.BoundTypeClient
 }
 
-func (p *ClientboundPluginMessage) Marshal(io encoding.IO) {
+func (p *ClientBoundPluginMessage) Marshal(io encoding.IO) {
 	io.Identifier(&p.Channel)
 	io.Bytes(&p.Data)
 }

@@ -18,26 +18,26 @@ import (
 // Vice versa, if the server does not send any
 // keep-alives for 20 seconds, the client will
 // disconnect and yields a "Timed out" exception.
-type ClientboundKeepAlive struct {
+type ClientBoundKeepAlive struct {
 	// KeepAliveID ..
 	KeepAliveID int64
 }
 
 // ID ..
-func (p *ClientboundKeepAlive) ID() int32 {
+func (p *ClientBoundKeepAlive) ID() int32 {
 	return IDClientBoundPluginMessage
 }
 
 // Resource ..
-func (p *ClientboundKeepAlive) Resource() string {
+func (p *ClientBoundKeepAlive) Resource() string {
 	return "keep_alive"
 }
 
 // BoundType ..
-func (p *ClientboundKeepAlive) BoundType() uint8 {
+func (p *ClientBoundKeepAlive) BoundType() uint8 {
 	return packet_interface.BoundTypeClient
 }
 
-func (p *ClientboundKeepAlive) Marshal(io encoding.IO) {
+func (p *ClientBoundKeepAlive) Marshal(io encoding.IO) {
 	io.Int64(&p.KeepAliveID)
 }

@@ -9,7 +9,7 @@ import (
 // are present on the client.
 //
 // The client sends this in response to
-// Clientbound Known Packs (https://minecraft.wiki/w/Java_Edition_protocol#Clientbound_Known_Packs).
+// ClientBound Known Packs (https://minecraft.wiki/w/Java_Edition_protocol#ClientBound_Known_Packs).
 //
 // If the client specifies a pack in this packet,
 // the server should omit its contained data from

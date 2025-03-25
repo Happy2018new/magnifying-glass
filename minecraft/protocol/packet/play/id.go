@@ -32,4 +32,8 @@ const (
 	IDClientBoundDeleteMessage
 	IDClientBoundDisconnect
 	IDClientBoundDisguisedChatMessage
+	IDClientBoundEntityEvent
+	IDClientBoundTeleportEntity
+	IDClientBoundExplosion
+	IDClientBoundUnloadChunk
 )

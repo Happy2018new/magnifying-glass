@@ -37,11 +37,15 @@ func NewServerPool() packet_interface.Pool {
 		IDClientBoundCookieRequest:              &CookieRequest{},
 		IDClientBoundSetCooldown:                &SetCooldown{},
 		IDClientBoundChatSuggestions:            &ChatSuggestions{},
-		IDClientBoundPluginMessage:              &ClientboundPluginMessage{},
+		IDClientBoundPluginMessage:              &ClientBoundPluginMessage{},
 		IDClientBoundDamageEvent:                &DamageEvent{},
 		IDClientBoundDebugSample:                &DebugSample{},
 		IDClientBoundDeleteMessage:              &DeleteMessage{},
 		IDClientBoundDisconnect:                 &Disconnect{},
 		IDClientBoundDisguisedChatMessage:       &DisguisedChatMessage{},
+		IDClientBoundEntityEvent:                &EntityEvent{},
+		IDClientBoundTeleportEntity:             &TeleportEntity{},
+		IDClientBoundExplosion:                  &Explosion{},
+		IDClientBoundUnloadChunk:                &UnloadChunk{},
 	}
 }
