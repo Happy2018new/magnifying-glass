@@ -6,7 +6,7 @@ import (
 )
 
 // Response to the clientbound packet
-// [Ping (https://minecraft.wiki/w/Java_Edition_protocol#Ping_(configuration)) ]
+// [Ping (https://minecraft.wiki/w/Java_Edition_protocol#Ping_(configuration))]
 // with the same id.
 type Pong struct {
 	// ID ..

@@ -9,7 +9,7 @@ import (
 // each containing a random ID.
 //
 // The client must respond with the same payload
-// [see Serverbound Keep Alive (https://minecraft.wiki/w/Java_Edition_protocol#Serverbound_Keep_Alive_(configuration)) ].
+// [see Serverbound Keep Alive (https://minecraft.wiki/w/Java_Edition_protocol#Serverbound_Keep_Alive_(configuration))].
 //
 // If the client does not respond to a Keep Alive
 // packet within 15 seconds after it was sent,
